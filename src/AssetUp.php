@@ -1,6 +1,6 @@
 <?php
 /**
- * Asset Uploader plugin for Craft CMS 3.x
+ * Asset Up plugin for Craft CMS 3.x
  *
  * Front end asset upload tools for Craft CMS
  *
@@ -8,10 +8,10 @@
  * @copyright Copyright (c) 2018 Fruit Studios
  */
 
-namespace fruitstudiosassetuploader\assetuploader;
+namespace fruitstudios\assetup;
 
-use fruitstudiosassetuploader\assetuploader\services\AssetUploaderService as AssetUploaderServiceService;
-use fruitstudiosassetuploader\assetuploader\variables\AssetUploaderVariable;
+use fruitstudios\assetup\services\AssetUpService;
+use fruitstudios\assetup\variables\AssetUpVariable;
 
 use Craft;
 use craft\base\Plugin;
@@ -24,21 +24,21 @@ use craft\events\RegisterUrlRulesEvent;
 use yii\base\Event;
 
 /**
- * Class AssetUploader
+ * Class AssetUp
  *
  * @author    Fruit Studios
- * @package   AssetUploader
+ * @package   AssetUp
  * @since     1.0.0
  *
- * @property  AssetUploaderServiceService $assetUploaderService
+ * @property  AssetUpServiceService $assetUploaderService
  */
-class AssetUploader extends Plugin
+class AssetUp extends Plugin
 {
     // Static Properties
     // =========================================================================
 
     /**
-     * @var AssetUploader
+     * @var AssetUp
      */
     public static $plugin;
 
@@ -83,7 +83,7 @@ class AssetUploader extends Plugin
             function (Event $event) {
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
-                $variable->set('assetUploader', AssetUploaderVariable::class);
+                $variable->set('assetUploader', AssetUpVariable::class);
             }
         );
 

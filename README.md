@@ -1,4 +1,4 @@
-# Asset Uploader plugin for Craft CMS 3.x
+# Asset Up plugin for Craft CMS 3.x
 
 Front end asset upload tools for Craft CMS
 
@@ -18,23 +18,23 @@ To install the plugin, follow these instructions.
 
 2. Then tell Composer to load the plugin:
 
-        composer require https://github.com/fruitstudios/assetuploader/asset-uploader
+        composer require https://github.com/fruitstudios/assetup/asset-uploader
 
-3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Asset Uploader.
+3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Asset Up.
 
-## Asset Uploader Overview
-
--Insert text here-
-
-## Configuring Asset Uploader
+## Asset Up Overview
 
 -Insert text here-
 
-## Using Asset Uploader
+## Configuring Asset Up
 
 -Insert text here-
 
-## Asset Uploader Roadmap
+## Using Asset Up
+
+-Insert text here-
+
+## Asset Up Roadmap
 
 Some things to do, and ideas for potential features:
 

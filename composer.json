@@ -1,5 +1,5 @@
 {
-    "name": "fruitstudiosassetuploader/asset-uploader",
+    "name": "fruitstudios/assetup",
     "description": "Front end asset upload tools for Craft CMS",
     "type": "craft-plugin",
     "version": "1.0.0",
@@ -11,8 +11,8 @@
         "asset uploader"
     ],
     "support": {
-        "docs": "https://github.com/https://github.com/fruitstudios/assetuploader/asset-uploader/blob/master/README.md",
-        "issues": "https://github.com/https://github.com/fruitstudios/assetuploader/asset-uploader/issues"
+        "docs": "https://github.com/fruitstudios/assetup/blob/master/README.md",
+        "issues": "https://github.com/fruitstudios/assetup/issues"
     },
     "license": "MIT",
     "authors": [
@@ -26,18 +26,18 @@
     },
     "autoload": {
         "psr-4": {
-          "fruitstudiosassetuploader\\assetuploader\\": "src/"
+          "fruitstudios\\assetup\\": "src/"
         }
     },
     "extra": {
-        "name": "Asset Uploader",
-        "handle": "asset-uploader",
+        "name": "Asset Up",
+        "handle": "assetup",
         "hasCpSettings": false,
         "hasCpSection": false,
-        "changelogUrl": "https://raw.githubusercontent.com/https://github.com/fruitstudios/assetuploader/asset-uploader/master/CHANGELOG.md",
+        "changelogUrl": "https://raw.githubusercontent.com/fruitstudios/assetup/master/CHANGELOG.md",
         "components": {
-            "assetUploaderService": "fruitstudiosassetuploader\\assetuploader\\services\\AssetUploaderService"
+            "assetUploaderService": "fruitstudios\\assetup\\services\\AssetUpService"
         },
-        "class": "fruitstudiosassetuploader\\assetuploader\\AssetUploader"
+        "class": "fruitstudios\\assetup\\AssetUp"
     }
 }

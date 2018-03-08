@@ -1,6 +1,6 @@
 <?php
 /**
- * Asset Uploader plugin for Craft CMS 3.x
+ * Asset Up plugin for Craft CMS 3.x
  *
  * Front end asset upload tools for Craft CMS
  *
@@ -8,18 +8,18 @@
  * @copyright Copyright (c) 2018 Fruit Studios
  */
 
-namespace fruitstudiosassetuploader\assetuploader\variables;
+namespace fruitstudios\assetup\variables;
 
-use fruitstudiosassetuploader\assetuploader\AssetUploader;
+use fruitstudios\assetup\AssetUp;
 
 use Craft;
 
 /**
  * @author    Fruit Studios
- * @package   AssetUploader
+ * @package   AssetUp
  * @since     1.0.0
  */
-class AssetUploaderVariable
+class AssetUpVariable
 {
     // Public Methods
     // =========================================================================
