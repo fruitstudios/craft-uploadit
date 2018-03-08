@@ -1,0 +1,43 @@
+{
+    "name": "fruitstudiosassetuploader/asset-uploader",
+    "description": "Front end asset upload tools for Craft CMS",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "asset uploader"
+    ],
+    "support": {
+        "docs": "https://github.com/https://github.com/fruitstudios/assetuploader/asset-uploader/blob/master/README.md",
+        "issues": "https://github.com/https://github.com/fruitstudios/assetuploader/asset-uploader/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fruit Studios",
+            "homepage": "http://fruitstudios.co.uk"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0-RC1"
+    },
+    "autoload": {
+        "psr-4": {
+          "fruitstudiosassetuploader\\assetuploader\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Asset Uploader",
+        "handle": "asset-uploader",
+        "hasCpSettings": false,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/https://github.com/fruitstudios/assetuploader/asset-uploader/master/CHANGELOG.md",
+        "components": {
+            "assetUploaderService": "fruitstudiosassetuploader\\assetuploader\\services\\AssetUploaderService"
+        },
+        "class": "fruitstudiosassetuploader\\assetuploader\\AssetUploader"
+    }
+}
