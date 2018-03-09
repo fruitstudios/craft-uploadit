@@ -1,49 +1,42 @@
 <?php
-/**
- * Asset Up plugin for Craft CMS 3.x
- *
- * Front end asset upload tools for Craft CMS
- *
- * @link      http://fruitstudios.co.uk
- * @copyright Copyright (c) 2018 Fruit Studios
- */
-
 namespace fruitstudios\assetup\variables;
 
 use fruitstudios\assetup\AssetUp;
 use fruitstudios\assetup\assetbundles\assetup\AssetUpAssetBundle;
 
+use Craft;
+use craft\web\View;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\Json as JsonHelper;
 
-use Craft;
-
-/**
- * @author    Fruit Studios
- * @package   AssetUp
- * @since     1.0.0
- */
 class AssetUpVariable
 {
     // Public Methods
     // =========================================================================
 
-    public function assetUploader($settings = [])
+    public function uploader($settings = [])
     {
+        // Set Site Template Mode
+        $currentTemplateMode = Craft::$app->getView()->getTemplateMode();
+        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
+
         // Register Assets
         Craft::$app->getView()->registerAssetBundle(AssetUpAssetBundle::class);
 
-        // Get Uploader ID
+        // Set Uploader ID
         $settings['id'] = $settings['id'] ?? 'GENERATE-UID';
 
         // Javascript
-        $jsVariables = JsonHelper::encode([
-            'id' => $settings['id'],
-        ]);
-        Craft::$app->getView()->registerJs('new AssetUp.Uploader('.$jsVariables.');');
+        $js = 'new AssetUp('.JsonHelper::encode($settings).');';
+        Craft::$app->getView()->registerJs($js, View::POS_END);
 
         // Uploader HTML
         $html = AssetUp::$plugin->service->getAssetUploaderHtml($settings);
+
+        // Reset Template Mode
+        Craft::$app->getView()->setTemplateMode($currentTemplateMode);
+
+        // Return Uploader
         return TemplateHelper::raw($html);
     }
 }

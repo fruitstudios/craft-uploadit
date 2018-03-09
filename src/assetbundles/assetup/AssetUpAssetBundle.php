@@ -4,6 +4,8 @@ namespace fruitstudios\assetup\assetbundles\assetup;
 use Craft;
 
 use yii\web\AssetBundle;
+use craft\web\assets\cp\CpAsset;
+
 
 class AssetUpAssetBundle extends AssetBundle
 {
@@ -17,6 +19,9 @@ class AssetUpAssetBundle extends AssetBundle
         $this->depends = [];
 
         $this->js = [
+            'js/vendor/ready.js',
+            'js/vendor/extend.js',
+            'js/vendor/atomic.js',
             'js/AssetUp.js',
         ];
 

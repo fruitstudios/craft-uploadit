@@ -18,3 +18,19 @@ class AssetUpService extends Component
         );
     }
 }
+
+
+
+// public function getSourceIdByHandle($handle)
+//     {
+//         $query = craft()->db->createCommand()
+//             ->select('id')
+//             ->limit(1)
+//             ->from('assetsources')
+//             ->where([
+//                 'handle' => $handle,
+//             ])
+//             ->queryRow();
+
+//         return $query['id'] ?? false;
+//     }

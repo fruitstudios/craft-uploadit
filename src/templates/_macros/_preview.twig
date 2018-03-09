@@ -1,0 +1,56 @@
+{% import "assetup/_macros" as macros %}
+
+{% set asset = asset ?? false %}
+
+{% set name = name ?? false %}
+{% set transform = transform ?? '' %}
+{% set type = 'file' %}
+
+{% if asset %}
+
+    {% set classes = [
+        'assetup--asset',
+        'assetup--asset-' ~ type,
+    ]|filter|join(' ') %}
+
+    {% set classes = [
+        type == 'image' ? 'style="background-image: url('~asset.url(transform)~');"' : null,
+    ]|filter|join(' ') %}
+
+    <li class="{{ classes }}"{{ attributes|raw }}>
+
+        {% if enableRemove %}
+            <span class="assetup--removeAsset">
+                {{ macros.icon({ icon: 'delete' }) }}
+            </span>
+        {% endif %}
+
+        {% if enableReorder %}
+            <span class="assetup--reorderAsset">
+                {{ macros.icon({ icon: 'reorder' }) }}
+            </span>
+        {% endif %}
+
+        {% switch type %}
+
+            {% case "file" %}
+                {{ macros.icon({ icon: 'file' }) }}
+                {{ asset.filename }}
+
+            {% case "image" %}
+                <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
+
+        {% endswitch %}
+
+        {% if name %}
+            {% set name = name|replace({'[]': ''}) ~ '[]' %}
+            <input type="hidden" name="{{ name }}" value="{{ asset.id }}">
+        {% endif %}
+
+    </li>
+
+{% endif %}
+
+
+
+

@@ -1,0 +1,5 @@
+{% set icon = icon ?? false %}
+{% if icon %}
+	{% set classes = classes ?? 'icon' %}
+	<svg class="{{ classes }}"><use xlink:href="/build/icons/svg/svg-symbols.svg#{{ icon }}"></use></svg>
+{% endif %}

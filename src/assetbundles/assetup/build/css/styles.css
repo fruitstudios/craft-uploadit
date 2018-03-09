@@ -1,3 +1,217 @@
-.assetup--class {
-  margin-bottom: 12px;
+
+.assetup--uploader {
+    background: red;
+    padding: 50px;
+    text-align: center;;
 }
+
+.assetup--assets {
+
+}
+
+.assetup--asset {
+
+}
+
+.assetup--asset-image {
+
+}
+
+.assetup--asset-file {
+
+}
+
+.assetup--controls {
+
+}
+
+.assetup--upload {
+
+}
+.assetup--label {
+
+}
+.assetup--or {
+
+}
+.assetup--btn {
+
+}
+
+.assetup--hidden {
+    display: none !important;
+}
+
+
+
+/*
+
+.asset-field {
+
+    a:hover {
+        text-decoration: none;
+    }
+    position: relative;
+    margin-bottom: $base-spacing;
+
+    .asset-field--upload {
+        display: block;
+
+        .asset-field--assetUpload {
+            width: 100%;
+            display: block;
+            border: 2px dashed $color-far-dark-grey;
+            text-align: center;
+            transition: 0.2s;
+
+            &.asset-field--assetUploadSquare {
+                padding-bottom: 100%;
+                .asset-field--assetUploadInner {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
+                }
+            }
+
+            .asset-field--assetUploadInner {
+                padding: $base-spacing*3;
+                .icon {
+                    fill: $color-far-dark-grey;
+                    width: 60px;
+                    height: 60px;
+                    margin-bottom: $base-spacing*2
+                }
+                p {
+                    margin-bottom: $base-spacing;
+                }
+                .or {
+                    color: $color-far-dark-grey;
+                    font-size: 14px;
+                }
+                .asset-field--assetUploadTitle {
+                    display: block;
+                }
+                .asset-field--assetUploadSubtitle {
+                    font-size: 12px;
+                }
+            }
+
+            &:hover {
+                background-color: shade($base-background-color, 5%);
+            }
+
+        }
+
+        .asset-field--upload.is-dragging {
+            opacity:0.4;
+        }
+    }
+
+    .asset-field--preview {
+
+        position: relative;
+        padding-bottom: 100%;
+        margin-bottom: $base-spacing;
+
+        .asset-field--assetPreview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8f8f8;
+            // height: 240px;
+
+            &[data-view="image"] {
+                text-align: center;
+                padding: 16px;
+                img{
+                    max-width: 100%;
+                    max-height: 100%;
+                    border-radius: 0;
+                }
+            }
+
+            &[data-view="background"] {
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center;
+            }
+
+            &[data-view="file"] {
+
+                height: 60px;
+                padding: 10px;
+
+                .icon {
+                    width: 36px;
+                    height: 36px;
+                }
+
+                p {
+                    display: inline-block;
+                    vertical-align: top;
+                    line-height: 36px;
+                    padding-left: 6px;
+                    overflow: hidden;
+                    max-width: 200px;
+                    text-overflow: ellipsis;
+                }
+            }
+
+        }
+
+    }
+
+    .asset-field--reorder,
+    .asset-field--delete {
+
+        display: flex;
+        cursor: pointer;
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        width: 30px;
+        height: 30px;
+        z-index: 99;
+        background-color: transparentize(white, 0.1);
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+
+        .icon {
+            width:16px;
+            height:16px;
+            fill: $color-black;
+        }
+
+        &:hover {
+            background-color: $color-far-primary;
+            .icon {
+                fill: $color-white;
+            }
+        }
+    }
+
+    .asset-field--reorder {
+        right: auto;
+        left: 12px;
+        cursor: ns-resize;
+    }
+
+    &.asset-field--view-file {
+        .asset-field--reorder,
+        .asset-field--delete {
+            top: 15px;
+        }
+    }
+
+}
+
+*/
