@@ -11,6 +11,10 @@
 namespace fruitstudios\assetup\variables;
 
 use fruitstudios\assetup\AssetUp;
+use fruitstudios\assetup\assetbundles\assetup\AssetUpAssetBundle;
+
+use craft\helpers\Template as TemplateHelper;
+use craft\helpers\Json as JsonHelper;
 
 use Craft;
 
@@ -24,16 +28,22 @@ class AssetUpVariable
     // Public Methods
     // =========================================================================
 
-    /**
-     * @param null $optional
-     * @return string
-     */
-    public function exampleVariable($optional = null)
+    public function assetUploader($settings = [])
     {
-        $result = "And away we go to the Twig template...";
-        if ($optional) {
-            $result = "I'm feeling optional today...";
-        }
-        return $result;
+        // Register Assets
+        Craft::$app->getView()->registerAssetBundle(AssetUpAssetBundle::class);
+
+        // Get Uploader ID
+        $settings['id'] = $settings['id'] ?? 'GENERATE-UID';
+
+        // Javascript
+        $jsVariables = JsonHelper::encode([
+            'id' => $settings['id'],
+        ]);
+        Craft::$app->getView()->registerJs('new AssetUp.Uploader('.$jsVariables.');');
+
+        // Uploader HTML
+        $html = AssetUp::$plugin->service->getAssetUploaderHtml($settings);
+        return TemplateHelper::raw($html);
     }
 }

@@ -61,19 +61,15 @@ class AssetUp extends Plugin
         parent::init();
         self::$plugin = $this;
 
+        $this->setComponents([
+            'service' => AssetUpService::class,
+        ]);
+
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['siteActionTrigger1'] = 'asset-uploader/default';
-            }
-        );
-
-        Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
-                $event->rules['cpActionTrigger1'] = 'asset-uploader/default/do-something';
+                $event->rules['siteActionTrigger1'] = 'assetup/default';
             }
         );
 
@@ -83,22 +79,13 @@ class AssetUp extends Plugin
             function (Event $event) {
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
-                $variable->set('assetUploader', AssetUpVariable::class);
-            }
-        );
-
-        Event::on(
-            Plugins::class,
-            Plugins::EVENT_AFTER_INSTALL_PLUGIN,
-            function (PluginEvent $event) {
-                if ($event->plugin === $this) {
-                }
+                $variable->set('assetUp', AssetUpVariable::class);
             }
         );
 
         Craft::info(
             Craft::t(
-                'asset-uploader',
+                'assetup',
                 '{name} plugin loaded',
                 ['name' => $this->name]
             ),
