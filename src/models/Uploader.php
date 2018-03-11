@@ -54,6 +54,10 @@ class Uploader extends Model
         return true;
     }
 
+    getJavascript() {
+
+    }
+
     render() {
         return 'the html here';
     }
