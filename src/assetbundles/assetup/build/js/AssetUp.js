@@ -1,23 +1,255 @@
 var AssetUp = (function () {
 	'use strict';
 
-	var defaults = {};
+	var defaults = {
+		sortable: {
+			animation: 150,
+			handle: ".assetup--handle",
+			draggable: ".assetup--asset",
+		}
+	};
+	var uploader;
+	var assets;
+	var controls;
+	var input;
+	var errors;
 
 	var constructor = function (options) {
 
+	    // Public
+	    // =========================================================================
+
 		var api = {};
+
+	    // Private
+	    // =========================================================================
+
 		var settings;
 
-		var log = function (value) {
-			console.log('AssetUp', value);
+	    // Private Methods
+	    // =========================================================================
+
+	    var initDropToUpload = function() {
+	    	if(settings.enableDropToUpload) {
+				uploader.addEventListener('dragover', dropToUploadHandler, false);
+				uploader.addEventListener('dragleave', dropToUploadHandler, false);
+				uploader.addEventListener('drop', dropToUploadHandler, false);
+	    	}
+	    }
+
+	   	var initReorderAssets = function() {
+	    	if(settings.enableReorder) {
+	    		Sortable.create(assets, settings.sortable);
+	    	}
+	    }
+
+	    var initRemoveAssets = function() {
+	    	if(settings.enableRemove) {
+				uploader.addEventListener('click', removeAssetHandler, false);
+	    	}
+	    }
+
+		var setElementLoading = function (element, loading) {
+			element = element || false;
+			loading = typeof(loading) === 'boolean' ? loading : true;
+
+			if(loading) {
+				element.classList.add('assetup--isLoading')
+			} else {
+				element.classList.remove('assetup--isLoading')
+			}
 		};
+
+
+	    // Event Handlers
+	    // =========================================================================
+
+		var dropToUploadHandler = function (event) {
+
+			var upload = event.target.closest('.assetup--upload');
+			if(!upload) {
+				return;
+			}
+			event.preventDefault();
+			event.stopPropagation();
+
+			switch (event.type) {
+
+				case 'dragover':
+					upload.classList.add('assetup--isDragging');
+					break;
+
+				case 'dragleave':
+					upload.classList.remove('assetup--isDragging');
+					break;
+
+				case 'drop':
+					api.log('Handle Drop Here');
+					upload.classList.remove('assetup--isDragging');
+					break;
+			}
+
+		};
+
+		var removeAssetHandler = function (event) {
+
+			if (!event.target.classList.contains('assetup--remove')) {
+				return;
+        	}
+        	event.preventDefault();
+
+	        var asset = event.target.closest('.assetup--asset');
+	        if (asset) {
+        		api.removeAsset(asset);
+	        }
+
+		};
+
+		var uploadAssetHandler = function (event) {
+
+			if (!event.target.closest('.assetup--upload')) {
+				return;
+        	}
+        	event.preventDefault();
+        	input.click();
+		};
+
+		var assetInputHandler = function (event) {
+
+			if (!event.target.closest('[name="assetUpAssetInput"]')) {
+				api.log('not found');
+				return;
+        	}
+        	event.preventDefault();
+
+        	api.uploadAssets();
+		};
+
+	    // Public Methods
+	    // =========================================================================
+
+	    api.log = function (value) {
+			console.log('[AssetUp][#'+settings.id+']', value, Array.prototype.slice.call(arguments));
+		};
+
+
+	    api.uploadAssets = function (assets) {
+			assets = assets || 'NONE SET';
+			api.log('Upload Assets And Return Error / Success Here');
+			api.log(assets);
+
+			setElementLoading(uploader, true);
+
+			var data = {
+				action: 'assetup/upload',
+				[settings.csrfTokenName]: settings.csrfTokenValue
+			}
+
+			atomic.ajax({
+			    type: 'POST',
+			    url: '/',
+			    data: data,
+			    responseType: 'json',
+			    headers: {
+			        'Accept': 'application/json',
+			        'X-Requested-With': 'XMLHttpRequest'
+			    }
+			})
+			.success(function (data, xhr) {
+				api.log('SUCCESS');
+			    api.log(data);
+			    api.log(xhr);
+			})
+			.error(function (data, xhr) {
+				api.log('ERROR');
+			    api.log(data);
+			    api.log(xhr);
+			})
+			.always(function (data, xhr) {
+				api.log('ALWAYS');
+			    api.log(data);
+			    api.log(xhr);
+			    setElementLoading(uploader, false);
+			});
+
+		 //    atomic.ajax({
+		 //    	type: 'POST',
+		 //        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+		 //    	url: '/',
+		 //    	data: app.helpers.prepAjaxRequestData(data)
+		 //    })
+			// .success(function (data, xhr) {
+
+		 //        app.spinner.stop(toggle);
+
+		 //        if(data.success)
+		 //        {
+		 //            document.body.innerHTML += data.html;
+
+		 //            var elem = document.querySelector(modalId);
+		 //            if(elem) {
+		 //                app.spinner.start(elem, { color: '#333' });
+		 //                modals.openModal(toggle, modalId);
+
+		 //                var imageLoader = imagesLoaded(elem, function() {
+		 //                    app.slider.init(elem);
+		 //                    app.spinner.stop(elem);
+		 //                });
+
+		 //                imageLoader.on( 'progress', function( instance, image ) {
+		 //                    var result = image.isLoaded ? 'loaded' : 'broken';
+		 //                    console.api.log( 'image is ' + result + ' for ' + image.img.src );
+		 //                });
+		 //            }
+		 //        }
+		 //        else
+		 //        {
+		 //            console.api.log('[MODALS] Could Not Load Modal', modalId);
+		 //            // $.flash({
+		 //            //     class: 'error',
+		 //            //     message: 'request failed',
+		 //            //     position: 'top'
+		 //            // });
+		 //        }
+
+			// })
+			// .error(function () {
+		 //        // $.flash({
+		 //        //     class: 'error',
+		 //        //     message: 'request failed',
+		 //        //     position: 'top'
+		 //        // });
+			// });
+		};
+
+		api.removeAsset = function (asset) {
+			asset = asset || null;
+			if(asset) {
+				asset.remove();
+			}
+		}
 
 		api.init = function (options) {
 
+			// Prep Settings
 			settings = extend(defaults, options || {});
+			api.log(settings);
 
-			log(settings);
-			log(window);
+			// Elements
+			uploader = document.getElementById(settings.id);
+			assets = uploader.querySelector('.assetup--assets');
+			controls = uploader.querySelector('.assetup--controls');
+			input = uploader.querySelector('[name="assetUpAssetInput"]');
+			errors = uploader.querySelector('.assetup--errors');
+
+			// Reorder
+			initReorderAssets();
+			initDropToUpload();
+			initRemoveAssets();
+
+			// Input
+			uploader.addEventListener('change', assetInputHandler, false);
+			uploader.addEventListener('click', uploadAssetHandler, false);
 
 		};
 

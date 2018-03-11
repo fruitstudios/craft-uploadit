@@ -1,47 +1,94 @@
+/* Uploader */
 
 .assetup--uploader {
-    background: red;
-    padding: 50px;
-    text-align: center;;
+    border:1px solid #ccc;
+    padding: 5px;
+    margin:30px;
+    position: relative;
 }
 
 .assetup--assets {
-
+    list-style-type: none;
+    margin:0;
+    padding:0;
 }
+
+/* Asset */
 
 .assetup--asset {
-
+    width: 300px;
+    height: 100px;
+    display: block;
+    margin-bottom:5px;
+    border:2px solid #333;
 }
 
-.assetup--asset-image {
+.assetup--asset-background {}
+.assetup--asset-image {}
+.assetup--asset-file {}
 
+.assetup--asset img {
+    max-height: 100%;
 }
 
-.assetup--asset-file {
-
-}
-
+/* Controls */
 .assetup--controls {
-
+    width: 300px;
+    background: #ccc;
+    position: relative;
 }
 
 .assetup--upload {
-
+    display:block;
+    background: red;
 }
-.assetup--label {
+.assetup--label {}
+.assetup--or {}
+.assetup--btn {}
 
-}
-.assetup--or {
-
-}
-.assetup--btn {
-
-}
-
-.assetup--hidden {
+/* Utilities */
+.assetup--isHidden {
     display: none !important;
 }
 
+.assetup--isDragging {
+    background: green;
+}
+
+@keyframes loading {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.assetup--isLoading:before {
+    content: '';
+    background: rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom: 0;
+}
+
+.assetup--isLoading:after {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    margin-left: -15px;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    border-top-color: #cccccc;
+    animation: loading .7s linear infinite;
+}
 
 
 /*

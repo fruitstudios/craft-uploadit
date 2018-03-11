@@ -4,34 +4,36 @@
 
 {% set name = name ?? false %}
 {% set transform = transform ?? '' %}
-{% set type = 'file' %}
+{% set view = 'image' %}
 
 {% if asset %}
 
     {% set classes = [
         'assetup--asset',
-        'assetup--asset-' ~ type,
+        'assetup--asset-' ~ view,
     ]|filter|join(' ') %}
 
-    {% set classes = [
-        type == 'image' ? 'style="background-image: url('~asset.url(transform)~');"' : null,
+    {% set attributes = [
+        view == 'background' ? 'style="background-image: url('~asset.url(transform)~');"' : null,
     ]|filter|join(' ') %}
 
     <li class="{{ classes }}"{{ attributes|raw }}>
 
         {% if enableRemove %}
-            <span class="assetup--removeAsset">
+            <span class="assetup--remove">
+                Remove
                 {{ macros.icon({ icon: 'delete' }) }}
             </span>
         {% endif %}
 
         {% if enableReorder %}
-            <span class="assetup--reorderAsset">
+            <span class="assetup--handle">
+                Handle
                 {{ macros.icon({ icon: 'reorder' }) }}
             </span>
         {% endif %}
 
-        {% switch type %}
+        {% switch view %}
 
             {% case "file" %}
                 {{ macros.icon({ icon: 'file' }) }}

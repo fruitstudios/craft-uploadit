@@ -19,7 +19,9 @@ class AssetUpAssetBundle extends AssetBundle
         $this->depends = [];
 
         $this->js = [
+            'js/vendor/polyfill.js',
             'js/vendor/ready.js',
+            'js/vendor/Sortable.js',
             'js/vendor/extend.js',
             'js/vendor/atomic.js',
             'js/AssetUp.js',

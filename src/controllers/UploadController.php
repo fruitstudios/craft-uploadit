@@ -6,21 +6,22 @@ use fruitstudios\assetup\AssetUp;
 use Craft;
 use craft\web\Controller;
 
-class AssetUpController extends Controller
+class UploadController extends Controller
 {
     // Protected Properties
     // =========================================================================
 
-    protected $allowAnonymous = ['index', 'upload-asset'];
+    protected $allowAnonymous = ['index'];
 
     // Public Methods
     // =========================================================================
 
-    public function actionUploadAsset()
+    public function actionIndex()
     {
-        $result = 'Welcome to the DefaultController actionDoSomething() method';
-
-        return $result;
+        return $this->asJson([
+            'success' => true,
+            'message' => 'actionUpload()'
+        ]);
     }
 
 

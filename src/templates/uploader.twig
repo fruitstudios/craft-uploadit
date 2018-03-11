@@ -20,7 +20,7 @@
 
     defaultImageView: 'background | img',
 
-    enableDrop: true,
+    enableDropToUpload: true,
     enableCss: true,
 
     enableReorder: true,
@@ -37,37 +37,36 @@
 {% set enableReorder = enableReorder ?? true %}
 {% set enableRemove = enableRemove ?? true %}
 
-
-
-
 {% set label = label ?? 'Upload your files' %}
 
-
-<p>The AssetUp Uploader</p>
-
-<div class="assetup--uploader">
+<div id="{{ id }}" class="assetup--uploader">
 
     {% if name %}
         <input type="hidden" name="{{ name|replace({'[]': ''}) }}" value="" />
     {% endif %}
 
-    <ul class="assetup--assets">
+    <ul id="{{ id }}Assets" class="assetup--assets">
 
         {% for asset in assets %}
 
-            {{ macros.fileItem({
+            {{ macros.preview({
                 asset: asset,
                 name: name,
                 transform: transform,
                 enableReorder: enableReorder,
                 enableRemove: enableRemove,
+                view: 'image'
             }) }}
 
         {% endfor %}
 
     </ul>
 
-    <div class="assetup--controls{{ limit and (assets|length - 1) >= limit ? ' assetup--hidden' }}">
+    <div class="assetup--errors assetup--isHidden">
+
+    </div>
+
+    <div class="assetup--controls{{ limit and (assets|length - 1) >= limit ? ' assetup--isHidden' }}">
 
         <a href="javascript:;" class="assetup--upload">
             {{ macros.icon({ icon: 'upload' }) }}
@@ -76,12 +75,14 @@
             <span class="assetup--btn">Browse files</span>
         </a>
 
-        <input type="file" name="assetUpInput" style="display:none;"
+        <input type="file" name="assetUpAssetInput" style="display:none;"
+
             data-element-id="{{ elementId ?? '' }}"
             data-field-id="{{ fieldId ?? ''  }}"
             data-folder="{{ folder ?? ''  }}"
             data-source="{{ source ?? ''  }}"
             data-transform="{{ transform }}"
+
             {{ not limit or limit > 1 ? ' multiple' }} />
 
     </div>
