@@ -122,6 +122,8 @@ var AssetUp = (function () {
         	}
         	event.preventDefault();
 
+        	api.log(input.files);
+
         	api.uploadAssets();
 		};
 
@@ -132,6 +134,16 @@ var AssetUp = (function () {
 			console.log('[AssetUp][#'+settings.id+']', value, Array.prototype.slice.call(arguments));
 		};
 
+		api.setError = function (error) {
+			error = error || false;
+			if(error) {
+				errors.textContent = error;
+				errors.classList.remove('assetup--isHidden');
+			} else {
+				errors.textContent = '';
+				errors.classList.add('assetup--isHidden');
+			}
+		};
 
 	    api.uploadAssets = function (assets) {
 			assets = assets || 'NONE SET';
@@ -144,6 +156,8 @@ var AssetUp = (function () {
 				action: 'assetup/upload',
 				[settings.csrfTokenName]: settings.csrfTokenValue
 			}
+
+
 
 			atomic.ajax({
 			    type: 'POST',
@@ -357,22 +371,7 @@ var AssetUp = (function () {
 
 //     };
 
-//     var deleteAsset = function(event) {
 
-//         event.preventDefault();
-
-//         var $trigger = $(this),
-//             $thisAssetFieldPreview = $trigger.closest('.js-assetFieldPreview'),
-//             $assetField = $thisAssetFieldPreview.closest('.js-assetField'),
-//             $allAssetFieldPreviews = $assetField.find('.js-assetFieldPreview'),
-//             limit = $.dataOrDefault($assetField, 'limit', false);
-
-//         if(limit && limit > ($allAssetFieldPreviews.length - 1) ) {
-//             $assetField.find('.js-assetUploadHolder').removeClass('is-hidden');
-//         }
-
-//         $thisAssetFieldPreview.remove();
-//     };
 
 //     var saveAssets = function(event) {
 
