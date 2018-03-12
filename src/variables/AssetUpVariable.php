@@ -30,6 +30,7 @@ class AssetUpVariable
         // TODO: This should probably use a model so you to handle all this logic
         //     : See models\Uploader (not ready yet)
         $settings['id'] = $settings['id'] ?? 'GENERATE-UID';
+        // {% set id = (id is defined and id ? id : 'assetup'~random()) %}
         $settings['csrfTokenName'] = Craft::$app->getConfig()->getGeneral()->csrfTokenName;
         $settings['csrfTokenValue'] = Craft::$app->getRequest()->getCsrfToken();
         // $settings['assets'] = 'SHOULD BE REMOVED FOR JS';
