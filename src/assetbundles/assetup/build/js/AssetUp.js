@@ -84,7 +84,7 @@ var AssetUp = (function () {
 					break;
 
 				case 'drop':
-					api.log('Handle Drop Here');
+					api.log('dropToUploadHandler()', 'Handle Drop Here');
 					upload.classList.remove('assetup--isDragging');
 					break;
 			}
@@ -117,21 +117,20 @@ var AssetUp = (function () {
 		var assetInputHandler = function (event) {
 
 			if (!event.target.closest('[name="assetUpAssetInput"]')) {
-				api.log('not found');
 				return;
         	}
         	event.preventDefault();
 
-        	api.log(input.files);
+        	var assets = input.files;
 
-        	api.uploadAssets();
+        	api.uploadAssets(assets);
 		};
 
 	    // Public Methods
 	    // =========================================================================
 
-	    api.log = function (value) {
-			console.log('[AssetUp][#'+settings.id+']', value, Array.prototype.slice.call(arguments));
+	    api.log = function (key, data) {
+			console.log('[AssetUp][#'+settings.id+']['+key+']', data);
 		};
 
 		api.setError = function (error) {
@@ -146,16 +145,35 @@ var AssetUp = (function () {
 		};
 
 	    api.uploadAssets = function (assets) {
+
 			assets = assets || 'NONE SET';
-			api.log('Upload Assets And Return Error / Success Here');
-			api.log(assets);
+			api.log('uploadAssets()', 'Upload Assets And Return Error / Success Here');
+			api.log('uploadAssets()', assets[0]);
+
 
 			setElementLoading(uploader, true);
 
 			var data = {
-				action: 'assetup/upload',
-				[settings.csrfTokenName]: settings.csrfTokenValue
+				// action: 'assetup/upload',
+				action: 'assets/save-asset',
+				[settings.csrfTokenName]: settings.csrfTokenValue,
+				folderId: 6,
+				'assets-upload': assets[0]
 			}
+
+			// Could potentially run through each asset here and upload using
+			// actions/assets/saveAsset
+			//
+	        // $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
+	        // $request = Craft::$app->getRequest();
+	        // $folderId = $request->getBodyParam('folderId');
+	        // $fieldId = $request->getBodyParam('fieldId');
+	        // $elementId = $request->getBodyParam('elementId');
+	        //
+	        // Will need:
+	        // folderId or fieldId
+	        // elementId - need this with fieldId requests TODO: work out if needed.
+
 
 
 
@@ -165,24 +183,31 @@ var AssetUp = (function () {
 			    data: data,
 			    responseType: 'json',
 			    headers: {
+			        'Content-type': 'multipart/form-data; charset=utf-8; boundary=' + Math.random().toString().substr(2),
 			        'Accept': 'application/json',
 			        'X-Requested-With': 'XMLHttpRequest'
 			    }
 			})
 			.success(function (data, xhr) {
-				api.log('SUCCESS');
-			    api.log(data);
-			    api.log(xhr);
+				api.log('uploadAssets()', {
+					type: 'SUCCESS',
+					data: data,
+					xhr: xhr
+				});
 			})
 			.error(function (data, xhr) {
-				api.log('ERROR');
-			    api.log(data);
-			    api.log(xhr);
+				api.log('uploadAssets()', {
+					type: 'ERROR',
+					data: data,
+					xhr: xhr
+				});
 			})
 			.always(function (data, xhr) {
-				api.log('ALWAYS');
-			    api.log(data);
-			    api.log(xhr);
+				api.log('uploadAssets()', {
+					type: 'ALWAYS',
+					data: data,
+					xhr: xhr
+				});
 			    setElementLoading(uploader, false);
 			});
 
@@ -247,7 +272,7 @@ var AssetUp = (function () {
 
 			// Prep Settings
 			settings = extend(defaults, options || {});
-			api.log(settings);
+			api.log('init()', settings);
 
 			// Elements
 			uploader = document.getElementById(settings.id);
