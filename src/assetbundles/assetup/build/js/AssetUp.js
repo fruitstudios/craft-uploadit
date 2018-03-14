@@ -188,7 +188,11 @@ var AssetUp = (function () {
 			var xhr = new XMLHttpRequest();
 			var formData = new FormData();
 			formData.append('action', 'assets/save-asset');
-			formData.append('folderId', 6);
+			if(settings.fieldId) {
+				formData.append('fieldId', settings.field); // TODO: This need to be properly hoekd up with the new model
+			} else {
+				formData.append('folderId', 6);
+			}
 			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
 			formData.append('assets-upload', asset);
 
@@ -341,9 +345,6 @@ var AssetUp = (function () {
 
 				if (xhr.status === 200) {
 
-					api.log('xhr', dom.assets);
-					// var t = document.createTextNode(xhr.response.html);
-					// dom.assets.appendChild(t);
 					dom.assets.innerHTML += xhr.response.html;
 
 					// This is where  we should set progress to complete

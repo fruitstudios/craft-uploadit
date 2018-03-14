@@ -1,32 +1,31 @@
 {% import "assetup/_macros" as macros %}
 
 {#
-{{ craft.assetUp.uploader({
+    {{ craft.assetUp.uploader({
 
-    id: 'uid',
-    name: 'name',
-    assets: [],
+        id: 'uid',
+        name: 'name',
+        assets: globalFields.images,
 
-    field: 'fieldHandle | id',
+        field: 'fieldHandle | id',
 
-    source: 'sourceHandle | sourceId',
-    folder: 'path/to/folder',
-    limit: null,
-    maxSize: '',
-    acceptedFileTypes: '',
+        source: 'sourceHandle | sourceId',
+        folder: 'path/to/folder',
+        limit: null,
+        maxSize: '',
+        acceptedFileTypes: '',
 
-    label: 'Select an asset',
-    class: 'custom-class',
+        label: 'Select an asset',
+        class: 'custom-class',
 
-    defaultImageView: 'background | img',
+        defaultImageView: 'background | img',
 
-    enableDropToUpload: true,
-    enableCss: true,
+        enableDropToUpload: true,
+        enableCss: true,
+        enableReorder: true,
+        enableRemove: true,
 
-    enableReorder: true,
-    enableRemove: true,
-
-}) }}
+    }) }}
 #}
 
 {% set name = name ?? false %}
