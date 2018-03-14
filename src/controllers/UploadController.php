@@ -2,6 +2,7 @@
 namespace fruitstudios\assetup\controllers;
 
 use fruitstudios\assetup\AssetUp;
+use fruitstudios\assetup\helpers\AssetUpHelper;
 
 use Craft;
 use craft\web\Controller;
@@ -11,21 +12,38 @@ class UploadController extends Controller
     // Protected Properties
     // =========================================================================
 
-    protected $allowAnonymous = ['index'];
+    protected $allowAnonymous = ['asset-preview'];
 
     // Public Methods
     // =========================================================================
 
-    public function actionIndex()
+    public function actionAssetPreview()
     {
+        $request = Craft::$app->getRequest();
+        $assetId = $request->getParam('assetId');
+
+        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+        if(!$asset) {
+            return $this->asErrorJson(Craft::t('assetup', 'Could not get asset for preview'));
+        }
+
+        $html = AssetUpHelper::renderTemplate('assetup/_macros/_preview', [
+            'asset' => $asset,
+            'view' => $request->getParam('view', 'image'),
+            'transform' => $request->getParam('transform', ''),
+            'enableReorder' => $request->getParam('enableReorder', true),
+            'enableRemove' => $request->getParam('enableRemove', true),
+        ]);
+
+        if(!$asset) {
+            return $this->asErrorJson(Craft::t('assetup', 'Could not asset preview'));
+        }
+
         return $this->asJson([
             'success' => true,
-            'message' => 'actionUpload()'
+            'html' => $html
         ]);
     }
-
-
-
 
 }
 

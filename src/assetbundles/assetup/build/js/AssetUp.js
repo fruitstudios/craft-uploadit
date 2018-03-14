@@ -8,11 +8,15 @@ var AssetUp = (function () {
 			draggable: ".assetup--asset",
 		}
 	};
-	var uploader;
-	var assets;
-	var controls;
-	var input;
-	var errors;
+
+	var dom = {
+		uploader: null,
+		assets: null,
+		controls: null,
+		input: null,
+		errors: null,
+		progress: null,
+	};
 
 	var constructor = function (options) {
 
@@ -31,21 +35,21 @@ var AssetUp = (function () {
 
 	    var initDropToUpload = function() {
 	    	if(settings.enableDropToUpload) {
-				uploader.addEventListener('dragover', dropToUploadHandler, false);
-				uploader.addEventListener('dragleave', dropToUploadHandler, false);
-				uploader.addEventListener('drop', dropToUploadHandler, false);
+	    		['dragover', 'dragenter', 'dragleave', 'drop'].forEach(name => {
+					dom.uploader.addEventListener(name, dropToUploadHandler, false);
+				});
 	    	}
 	    }
 
 	   	var initReorderAssets = function() {
 	    	if(settings.enableReorder) {
-	    		Sortable.create(assets, settings.sortable);
+	    		Sortable.create(dom.assets, settings.sortable);
 	    	}
 	    }
 
 	    var initRemoveAssets = function() {
 	    	if(settings.enableRemove) {
-				uploader.addEventListener('click', removeAssetHandler, false);
+				dom.uploader.addEventListener('click', removeAssetHandler, false);
 	    	}
 	    }
 
@@ -60,6 +64,16 @@ var AssetUp = (function () {
 			}
 		};
 
+		var objToParams = function (obj) {
+			if (typeof (obj) === 'string') return obj;
+			var encoded = [];
+			for (var prop in obj) {
+				if (obj.hasOwnProperty(prop)) {
+					encoded.push(encodeURIComponent(prop) + '=' + encodeURIComponent(obj[prop]));
+				}
+			}
+			return encoded.join('&');
+		};
 
 	    // Event Handlers
 	    // =========================================================================
@@ -75,6 +89,7 @@ var AssetUp = (function () {
 
 			switch (event.type) {
 
+				case 'dragenter':
 				case 'dragover':
 					upload.classList.add('assetup--isDragging');
 					break;
@@ -84,8 +99,13 @@ var AssetUp = (function () {
 					break;
 
 				case 'drop':
-					api.log('dropToUploadHandler()', 'Handle Drop Here');
 					upload.classList.remove('assetup--isDragging');
+	                var assets = event.dataTransfer.files;
+	                if(!assets) {
+	                	api.setError('Drop Error');
+	                	return;
+	                }
+	                api.uploadAssets(assets)
 					break;
 			}
 
@@ -111,7 +131,7 @@ var AssetUp = (function () {
 				return;
         	}
         	event.preventDefault();
-        	input.click();
+        	dom.input.click();
 		};
 
 		var assetInputHandler = function (event) {
@@ -120,10 +140,7 @@ var AssetUp = (function () {
 				return;
         	}
         	event.preventDefault();
-
-        	var assets = input.files;
-
-        	api.uploadAssets(assets);
+        	api.uploadAssets(dom.input.files);
 		};
 
 	    // Public Methods
@@ -136,39 +153,32 @@ var AssetUp = (function () {
 		api.setError = function (error) {
 			error = error || false;
 			if(error) {
-				errors.textContent = error;
-				errors.classList.remove('assetup--isHidden');
+				dom.errors.textContent = error;
+				dom.errors.classList.remove('assetup--isHidden');
 			} else {
-				errors.textContent = '';
-				errors.classList.add('assetup--isHidden');
+				dom.errors.textContent = '';
+				dom.errors.classList.add('assetup--isHidden');
 			}
 		};
 
-	    api.uploadAssets = function (assets) {
+		api.uploadAssets = function (assets) {
+			api.log('api.uploadAssets()', assets);
 
-			assets = assets || 'NONE SET';
-			api.log('uploadAssets()', 'Upload Assets And Return Error / Success Here');
-			api.log('uploadAssets()', assets[0]);
-
-
-			setElementLoading(uploader, true);
-
-			var data = {
-				// action: 'assetup/upload',
-				action: 'assets/save-asset',
-				[settings.csrfTokenName]: settings.csrfTokenValue,
-				folderId: 6,
-				'assets-upload': assets[0]
+			assets = assets || false;
+			if(!assets) {
+				return;
 			}
 
-			// Could potentially run through each asset here and upload using
-			// actions/assets/saveAsset
-			//
-	        // $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
-	        // $request = Craft::$app->getRequest();
-	        // $folderId = $request->getBodyParam('folderId');
-	        // $fieldId = $request->getBodyParam('fieldId');
-	        // $elementId = $request->getBodyParam('elementId');
+	        assets = [...assets];
+	        //   initializeProgress(assets.length);
+	        assets.forEach(api.uploadAsset);
+	        //   assets.forEach(previewFile);
+		}
+
+	    api.uploadAsset = function (asset, i) {
+
+			// setElementLoading(controls, true);
+
 	        //
 	        // Will need:
 	        // folderId or fieldId
@@ -180,7 +190,7 @@ var AssetUp = (function () {
 			formData.append('action', 'assets/save-asset');
 			formData.append('folderId', 6);
 			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
-			formData.append('assets-upload', assets[0]);
+			formData.append('assets-upload', asset);
 
 			xhr.open('POST', '/', true);
 			xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -191,58 +201,32 @@ var AssetUp = (function () {
 			// 	updateProgress(i, (e.loaded * 100.0 / e.total) || 100)
 			// })
 
-			xhr.addEventListener('readystatechange', function(e) {
-				if (xhr.readyState == 4 && xhr.status == 200) {
-					api.log('uploadAssets()', e);
-					// updateProgress(i, 100) // <- Add this
-				}
-				else if (xhr.readyState == 4 && xhr.status != 200) {
-					// Error. Inform the user
-				}
-			});
+			// Setup our listener to process compeleted requests
+			xhr.onreadystatechange = function () {
 
+				if (xhr.readyState !== 4) return;
+
+				if (xhr.status === 200) {
+
+					console.log(xhr.response);
+					api.setAssetPreview(xhr.response.assetId);
+
+					// This is now done in the setAssetPreview method
+					// updateProgress(i, 100) // <- Add this
+
+				} else {
+					// Fail
+					console.log('The request failed!');
+				}
+
+				// Always
+				// console.log('This always runs...');
+			};
+
+			xhr.responseType = 'json';
 			xhr.send(formData);
 
 			// https://www.smashingmagazine.com/2018/01/drag-drop-file-uploader-vanilla-js/
-
-	        // let dropArea = document.getElementById("drop-area")
-
-	        // // Prevent default drag behaviors
-	        // ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-	        //   dropArea.addEventListener(eventName, preventDefaults, false)
-	        // })
-
-	        // // Highlight drop area when item is dragged over it
-	        // ;['dragenter', 'dragover'].forEach(eventName => {
-	        //   dropArea.addEventListener(eventName, highlight, false)
-	        // })
-
-	        // ;['dragleave', 'drop'].forEach(eventName => {
-	        //   dropArea.addEventListener(eventName, unhighlight, false)
-	        // })
-
-	        // // Handle dropped files
-	        // dropArea.addEventListener('drop', handleDrop, false)
-
-	        // function preventDefaults (e) {
-	        //   e.preventDefault()
-	        //   e.stopPropagation()
-	        // }
-
-	        // function highlight(e) {
-	        //   dropArea.classList.add('highlight')
-	        // }
-
-	        // function unhighlight(e) {
-	        //   dropArea.classList.remove('active')
-	        // }
-
-	        // function handleDrop(e) {
-	        //   var dt = e.dataTransfer
-	        //   var files = dt.files
-
-	        //   handleFiles(files)
-	        // }
 
 	        // let uploadProgress = []
 	        // let progressBar = document.getElementById('progress-bar')
@@ -312,59 +296,6 @@ var AssetUp = (function () {
 
 
 
-			// atomic.ajax({
-			//     type: 'POST',
-			//     url: '/',
-			//     data: data,
-			//     responseType: 'json',
-			//     headers: {
-			//         'Content-type': 'multipart/form-data; charset=utf-8;',
-			//         'Accept': 'application/json',
-			//         // 'X-Requested-With': 'XMLHttpRequest'
-			//     }
-			// })
-			// .success(function (data, xhr) {
-			// 	api.log('uploadAssets()', {
-			// 		type: 'SUCCESS',
-			// 		data: data,
-			// 		xhr: xhr
-			// 	});
-			// })
-			// .error(function (data, xhr) {
-			// 	api.log('uploadAssets()', {
-			// 		type: 'ERROR',
-			// 		data: data,
-			// 		xhr: xhr
-			// 	});
-			// })
-			// .always(function (data, xhr) {
-			// 	api.log('uploadAssets()', {
-			// 		type: 'ALWAYS',
-			// 		data: data,
-			// 		xhr: xhr
-			// 	});
-			//     setElementLoading(uploader, false);
-			// });
-
-		 //    atomic.ajax({
-		 //    	type: 'POST',
-		 //        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-		 //    	url: '/',
-		 //    	data: app.helpers.prepAjaxRequestData(data)
-		 //    })
-			// .success(function (data, xhr) {
-
-		 //        app.spinner.stop(toggle);
-
-		 //        if(data.success)
-		 //        {
-		 //            document.body.innerHTML += data.html;
-
-		 //            var elem = document.querySelector(modalId);
-		 //            if(elem) {
-		 //                app.spinner.start(elem, { color: '#333' });
-		 //                modals.openModal(toggle, modalId);
-
 		 //                var imageLoader = imagesLoaded(elem, function() {
 		 //                    app.slider.init(elem);
 		 //                    app.spinner.stop(elem);
@@ -375,26 +306,58 @@ var AssetUp = (function () {
 		 //                    console.api.log( 'image is ' + result + ' for ' + image.img.src );
 		 //                });
 		 //            }
-		 //        }
-		 //        else
-		 //        {
-		 //            console.api.log('[MODALS] Could Not Load Modal', modalId);
-		 //            // $.flash({
-		 //            //     class: 'error',
-		 //            //     message: 'request failed',
-		 //            //     position: 'top'
-		 //            // });
-		 //        }
 
-			// })
-			// .error(function () {
-		 //        // $.flash({
-		 //        //     class: 'error',
-		 //        //     message: 'request failed',
-		 //        //     position: 'top'
-		 //        // });
-			// });
+
+
+
+
+
+
 		};
+
+		api.setAssetPreview = function (id) {
+
+			// See: https://gist.github.com/sgnl/bd760187214681cdb6dd
+
+			var xhr = new XMLHttpRequest();
+			var data = {
+				action: 'assetup/upload/asset-preview',
+				[settings.csrfTokenName]: settings.csrfTokenValue,
+				assetId: id,
+				view: 'image',
+				transfrom: '',
+				allowReorder: true,
+				allowRemove: true,
+			};
+
+			xhr.open('POST', '/', true);
+			xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+			xhr.setRequestHeader('Accept', 'application/json');
+			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+			xhr.onreadystatechange = function () {
+
+				if (xhr.readyState !== 4) return;
+
+				if (xhr.status === 200) {
+
+					api.log('xhr', dom.assets);
+					// var t = document.createTextNode(xhr.response.html);
+					// dom.assets.appendChild(t);
+					dom.assets.innerHTML += xhr.response.html;
+
+					// This is where  we should set progress to complete
+					// updateProgress(i, 100) // <- Add this
+
+				} else {
+					// Fail
+					console.log('Could not get preview!');
+				}
+			};
+
+  			xhr.responseType = 'json';
+			xhr.send(objToParams(data));
+		}
 
 		api.removeAsset = function (asset) {
 			asset = asset || null;
@@ -410,11 +373,12 @@ var AssetUp = (function () {
 			api.log('init()', settings);
 
 			// Elements
-			uploader = document.getElementById(settings.id);
-			assets = uploader.querySelector('.assetup--assets');
-			controls = uploader.querySelector('.assetup--controls');
-			input = uploader.querySelector('[name="assetUpAssetInput"]');
-			errors = uploader.querySelector('.assetup--errors');
+			dom.uploader = document.getElementById(settings.id);
+			dom.assets = dom.uploader.querySelector('.assetup--assets');
+			dom.controls = dom.uploader.querySelector('.assetup--controls');
+			dom.input = dom.uploader.querySelector('[name="assetUpAssetInput"]');
+			dom.errors = dom.uploader.querySelector('.assetup--errors');
+			dom.progress = dom.uploader.querySelector('.assetup--progress');
 
 			// Reorder
 			initReorderAssets();
@@ -422,8 +386,8 @@ var AssetUp = (function () {
 			initRemoveAssets();
 
 			// Input
-			uploader.addEventListener('change', assetInputHandler, false);
-			uploader.addEventListener('click', uploadAssetHandler, false);
+			dom.uploader.addEventListener('change', assetInputHandler, false);
+			dom.uploader.addEventListener('click', uploadAssetHandler, false);
 
 		};
 
@@ -435,146 +399,6 @@ var AssetUp = (function () {
 
 })();
 
-// (function ( FINDARACE ) {
-//     "use strict";
-
-//     // TODO: *** This works but does not handle errors well.
-//     //     : It would be best to handle this in one hit, needs reworking.
-//     var allowMultipleUploads = false;
-
-//     var init = function () {
-
-//         FINDARACE.DOM.$body.on('click', '.js-assetUpload', function(event) {
-//             event.preventDefault();
-//             var $trigger = $(this);
-//             $trigger.next('input[name="assetFileInput"]').trigger('click');
-//         });
-
-//         FINDARACE.DOM.$body.on('change', 'input[name="assetFileInput"]', saveAssets);
-
-//         FINDARACE.DOM.$body.on('click', '.js-assetFieldDelete', deleteAsset);
-
-//         initAssetFields();
-//         initAssetDrop();
-//     };
-
-//     var initAssetFields = function(context) {
-
-//         var assetFields = context ? context.querySelectorAll('.js-assetFieldAssets') : document.querySelectorAll('.js-assetFieldAssets');
-
-//         assetFields.forEach(function (assetFieldAssets, index) {
-
-//             var sortable = new Sortable(assetFieldAssets, {
-//     	        handle: ".js-assetFieldReOrderHandle",
-//                 filter: ".hidden",
-//             });
-//         });
-
-//     };
-
-//     var initAssetDrop = function() {
-
-//         FINDARACE.DOM.$body.on('dragover', '.js-assetUpload', function(event) {
-//             event.preventDefault();
-//             event.stopPropagation();
-//             $(this).addClass('is-dragging');
-//         });
-
-//         FINDARACE.DOM.$body.on('dragleave', '.js-assetUpload', function(event) {
-//             event.preventDefault();
-//             event.stopPropagation();
-//             $(this).removeClass('is-dragging');
-//         });
-
-//         FINDARACE.DOM.$body.on('drop', '.js-assetUpload', function(event) {
-//             event.preventDefault();
-//             event.stopPropagation();
-//             var droppedFiles = event.originalEvent.dataTransfer.files,
-//                 $fileInput = $(this).closest('.js-assetUploadHolder').find('input[name=assetFileInput]');
-
-//             if(allowMultipleUploads) {
-
-//                 if(droppedFiles.length >= 0)
-//                 {
-//                     for (var i = 0; i < droppedFiles.length; i++) {
-//                         saveAsset(event, $fileInput, droppedFiles[i]);
-//                     }
-//                 }
-//                 else
-//                 {
-//                     $.flash({
-//                         class: 'error',
-//                         message: 'Sorry, doesn\'t look like you have added any files.',
-//                         position: 'top'
-//                     });
-//                 }
-
-//             } else {
-
-//                 if(droppedFiles.length === 1)
-//                 {
-//                     saveAsset(event, $fileInput, droppedFiles[0]);
-//                 }
-//                 else
-//                 {
-//                     $.flash({
-//                         class: 'error',
-//                         message: 'Sorry, you can\'t upload multiple files',
-//                         position: 'top'
-//                     });
-//                 }
-
-//             }
-
-//             $(this).removeClass('is-dragging');
-//         });
-
-//     };
-
-
-
-//     var saveAssets = function(event) {
-
-//         event.preventDefault();
-
-//         var $fileInput = $(this);
-
-//         if(allowMultipleUploads) {
-
-//             if($fileInput[0].files.length >= 0)
-//             {
-//                 for (var i = 0; i < $fileInput[0].files.length; i++) {
-//                     // TODO: SEE ABOVE ***
-//                     saveAsset(event, $fileInput, $fileInput[0].files[i]);
-//                 }
-//             }
-//             else
-//             {
-//                 $.flash({
-//                     class: 'error',
-//                     message: 'Sorry, doesn\'t look like you have added any files.',
-//                     position: 'top'
-//                 });
-//             }
-
-//         } else {
-
-//             if($fileInput[0].files.length === 1)
-//             {
-//                 saveAsset(event, $fileInput, $fileInput[0].files[0]);
-//             }
-//             else
-//             {
-//                 $.flash({
-//                     class: 'error',
-//                     message: 'Sorry, you can\'t upload multiple files',
-//                     position: 'top'
-//                 });
-//             }
-
-//         }
-
-//     };
 
 //     var saveAsset = function(event, $fileInput, asset) {
 
@@ -711,9 +535,3 @@ var AssetUp = (function () {
 //             error();
 //         });
 //     };
-
-//     FINDARACE.assets = {
-//         init: init,
-//         preLoadImage: preLoadImage,
-//     };
-// })( window.FINDARACE );

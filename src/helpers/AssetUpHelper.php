@@ -3,11 +3,28 @@
 namespace fruitstudios\assetup\helpers;
 
 use Craft;
+use craft\web\View;
+use craft\helpers\Template as TemplateHelper;
 
 class AssetUpHelper
 {
+
     // Public Methods
     // =========================================================================
+
+    public static function renderTemplate(string $template, array $variables = [])
+    {
+        $view = Craft::$app->getView();
+        $currentTemplateMode = $view->getTemplateMode();
+        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+
+        $html = $view->renderTemplate($template, $variables);
+
+        $view->setTemplateMode($currentTemplateMode);
+        return $html;
+        // return TemplateHelper::raw($html);
+    }
+
 
     // public static function getFieldMap()
     // {

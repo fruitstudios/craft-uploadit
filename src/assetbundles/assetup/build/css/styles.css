@@ -46,9 +46,17 @@
 .assetup--or {}
 .assetup--btn {}
 
+
+/* Errors */
 .assetup--errors {
     color: red;
 }
+
+/* Progress */
+.assetup--progress {
+
+}
+
 /* Utilities */
 .assetup--isHidden {
     display: none !important;
