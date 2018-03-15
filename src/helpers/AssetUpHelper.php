@@ -4,9 +4,14 @@ namespace fruitstudios\assetup\helpers;
 
 use Craft;
 use craft\web\View;
+use craft\db\Query;
 
 class AssetUpHelper
 {
+    // Private
+    // =========================================================================
+
+    private static $_fieldsMap;
 
     // Public Methods
     // =========================================================================
@@ -24,42 +29,71 @@ class AssetUpHelper
     }
 
 
-    // public static function getFieldMap()
-    // {
-    //     $fields = craft()->db->createCommand()
-    //     ->select('f.id, f.handle, f.context')
-    //     ->from('fields f')
-    //     ->order('f.id')
-    //     ->queryAll();
+    public static function getFieldByHandle(string $handle)
+    {
+        self::_buildFieldsMap();
+        $fieldId = self::$_fieldsMap[$handle] ?? false;
+        return $fieldId ? self::getFieldById($fieldId) : false;
+    }
 
-    //     $matrixFieldTypes = craft()->db->createCommand()
-    //     ->select('mbt.id, mbt.handle, f.handle as fieldHandle')
-    //     ->from('matrixblocktypes mbt')
-    //     ->order('mbt.id')
-    //     ->join('fields f', 'f.id = mbt.fieldId')
-    //     ->queryAll();
+    public static function getFieldIdByHandle(string $handle)
+    {
+        self::_buildFieldsMap();
+        return self::$_fieldsMap[$handle] ?? false;
+    }
 
-    //     $matrixFieldsContext = [];
-    //     foreach ($matrixFieldTypes as $matrixFieldType)
-    //     {
-    //         $matrixFieldsContext['matrixBlockType:'.$matrixFieldType['id']] = $matrixFieldType['fieldHandle'].':'.$matrixFieldType['handle'].':';
-    //     }
+    public static function getFieldById(int $id)
+    {
+        return Craft::$app->getFields()->getFieldById($id);
+    }
 
-    //     $fieldMap = [];
-    //     foreach ($fields as $field)
-    //     {
-    //         if(array_key_exists($field['context'], $matrixFieldsContext))
-    //         {
-    //             $handle = $matrixFieldsContext[$field['context']].$field['handle'];
-    //             $fieldMap[$handle] = $field['id'];
-    //         }
-    //         else
-    //         {
-    //             $fieldMap[$field['handle']] = $field['id'];
-    //         }
-    //     }
+    public static function getFieldsMap()
+    {
+        self::_buildFieldsMap();
+        return self::$_fieldsMap;
+    }
 
-    //     return $fieldMap;
-    // }
+    // Private Methods
+    // =========================================================================
+
+    private static function _buildFieldsMap()
+    {
+        if (self::$_fieldsMap === null) {
+
+            $fields = (new Query())
+                ->select(['id', 'handle', 'context'])
+                ->from(['{{%fields}}'])
+                ->all();
+
+            $matrixFieldTypes =  (new Query())
+                ->select(['matrixblocktypes.id', 'matrixblocktypes.handle', 'fields.handle as fieldHandle'])
+                ->from(['{{%matrixblocktypes}} matrixblocktypes'])
+                ->orderBy('matrixblocktypes.id')
+                ->innerJoin('{{%fields}} fields', '[[fields.id]] = [[matrixblocktypes.fieldId]]')
+                ->all();
+
+            $matrixFieldsContext = [];
+            foreach ($matrixFieldTypes as $matrixFieldType)
+            {
+                $matrixFieldsContext['matrixBlockType:'.$matrixFieldType['id']] = $matrixFieldType['fieldHandle'].':'.$matrixFieldType['handle'].':';
+            }
+
+            $fieldMap = [];
+            foreach ($fields as $field)
+            {
+                if(array_key_exists($field['context'], $matrixFieldsContext))
+                {
+                    $handle = $matrixFieldsContext[$field['context']].$field['handle'];
+                    $fieldMap[$handle] = $field['id'];
+                }
+                else
+                {
+                    $fieldMap[$field['handle']] = $field['id'];
+                }
+            }
+
+            self::$_fieldsMap = $fieldMap;
+        }
+    }
 
 }
