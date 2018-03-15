@@ -24,33 +24,29 @@
 
             {% endfor %}
 
+            <li class="assetup--controls{{ uploader.limit and (uploader.assets|length - 1) >= uploader.limit ? ' assetup--isHidden' }}">
+
+                <div class="assetup--controls-inner">
+
+                    <a href="javascript:;" class="assetup--upload">
+                       {#  {{ macros.icon({ icon: 'upload' }) }} #}
+                        <span class="assetup--label">{{ uploader.selectText }}</span>
+                        {% if uploader.enableDropToUpload %}
+                            <span class="assetup--or">{{ 'or'|t('assetup') }}</span>
+                            <span class="assetup--btn">{{ uploader.dropText }}</span>
+                        {% endif %}
+                    </a>
+
+                    <input type="file" name="assetUpAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />
+
+                </div>
+            </li>
+
         </ul>
 
-        <div class="assetup--errors assetup--isHidden">
+        <div class="assetup--errors assetup--isHidden"></div>
 
-        </div>
-
-        <div class="assetup--progress assetup--isHidden">
-
-        </div>
-
-        <div class="assetup--controls{{ uploader.limit and (uploader.assets|length - 1) >= uploader.limit ? ' assetup--isHidden' }}">
-
-            <div class="assetup--controls-inner">
-
-                <a href="javascript:;" class="assetup--upload">
-                   {#  {{ macros.icon({ icon: 'upload' }) }} #}
-                    <span class="assetup--label">{{ uploader.uploadText }}</span>
-                    {% if uploader.enableDropToUpload %}
-                        <span class="assetup--or">{{ 'or'|t('assetup') }}</span>
-                        <span class="assetup--btn">{{ uploader.dropText }}</span>
-                    {% endif %}
-                </a>
-
-                <input type="file" name="assetUpAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />
-
-            </div>
-        </div>
+        <div class="assetup--progress assetup--isHidden"></div>
 
     </div>
 

@@ -35,7 +35,7 @@ class Uploader extends Model
     public $enableReorder = true;
     public $enableRemove = true;
 
-    public $uploadText;
+    public $selectText;
     public $dropText;
 
     public $transform;
@@ -56,7 +56,7 @@ class Uploader extends Model
     public function __construct(array $attributes = null)
     {
         $this->id = uniqid('assetup');
-        $this->uploadText = Craft::t('assetup', 'Select files');
+        $this->selectText = Craft::t('assetup', 'Select files');
         $this->dropText = Craft::t('assetup', 'drop files here');
 
         if($attributes)

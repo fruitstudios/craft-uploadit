@@ -11,7 +11,7 @@ var AssetUp = (function () {
 			dragClass: "assetup--asset-dragging",
 			ghostClass: "assetup--asset-ghost",
 			chosenClass: "assetup--asset-chosen",
-			filter: ".assetup--remove",
+			filter: ".assetup--remove, .assetup--controls",
 			onFilter: function (evt) {
 				evt.item.parentNode.removeChild(evt.item);
 			}
@@ -60,6 +60,7 @@ var AssetUp = (function () {
 
 	   	var initReorderAssets = function() {
 	    	if(settings.enableReorder) {
+	    		api.log('Sortable', settings.sortable);
 	    		Sortable.create(dom.assets, settings.sortable);
 	    	}
 	    }
