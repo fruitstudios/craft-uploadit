@@ -4,7 +4,6 @@ namespace fruitstudios\assetup\helpers;
 
 use Craft;
 use craft\web\View;
-use craft\helpers\Template as TemplateHelper;
 
 class AssetUpHelper
 {
@@ -22,7 +21,6 @@ class AssetUpHelper
 
         $view->setTemplateMode($currentTemplateMode);
         return $html;
-        // return TemplateHelper::raw($html);
     }
 
 

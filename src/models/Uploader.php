@@ -1,8 +1,13 @@
 <?php
 namespace fruitstudios\assetup\models;
 
+use fruitstudios\assetup\helpers\AssetUpHelper;
+use fruitstudios\assetup\assetbundles\assetup\AssetUpAssetBundle;
+
 use Craft;
+use craft\web\View;
 use craft\base\Model;
+use craft\helpers\Json as JsonHelper;
 
 class Uploader extends Model
 {
@@ -17,15 +22,23 @@ class Uploader extends Model
     public $id;
     public $name;
     public $assets;
+
     public $field;
 
-    public $label;
+    // Uploader Layout (grid | compact-grid | list)
+    public $layout = 'grid';
 
-    public $view = 'file';
+    // Preview (file | background | img)
+    public $preview = 'file';
 
     public $enableDropToUpload = true;
     public $enableReorder = true;
     public $enableRemove = true;
+
+    public $uploadText;
+    public $dropText;
+
+    public $transform;
 
     public $source;
     public $folder;
@@ -33,59 +46,62 @@ class Uploader extends Model
     public $maxSize;
     public $acceptedFileTypes;
 
-    public $customClass;
+    public $class;
 
 
 
     // Public Methods
     // =========================================================================
 
-    public function __construct($settings)
+    public function __construct(array $attributes = null)
     {
+        $this->id = uniqid('assetup');
+        $this->uploadText = Craft::t('assetup', 'Select files');
+        $this->dropText = Craft::t('assetup', 'drop files here');
 
-
-
-
-
+        if($attributes)
+        {
+            $this->setAttributes($attributes, false);
+        }
     }
 
-    getCanUse() {
-        // Return true only if we have enough data to use
-        return true;
+    public function getJavascriptVariables(bool $encode = true)
+    {
+        $settings = [
+            'id' => $this->id,
+            'name' => $this->name,
+            'layout' => $this->layout,
+            'preview' => $this->preview,
+            'enableDropToUpload' => $this->enableDropToUpload,
+            'enableReorder' => $this->enableReorder,
+            'enableRemove' => $this->enableRemove,
+            'csrfTokenName' => Craft::$app->getConfig()->getGeneral()->csrfTokenName,
+            'csrfTokenValue' => Craft::$app->getRequest()->getCsrfToken(),
+        ];
+        return $encode ? JsonHelper::encode($settings) : $settings;
     }
 
-    getJavascript() {
-
+    public function getHtml()
+    {
+        $this->validate();
+        return AssetUpHelper::renderTemplate('assetup/uploader', [
+            'uploader' => $this
+        ]);
     }
 
-    render() {
-        return 'the html here';
+    public function render()
+    {
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(AssetUpAssetBundle::class);
+        $view->registerJs('new AssetUp('.$this->getJavascriptVariables().');', View::POS_END);
+        return $this->getHtml();
     }
 
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['id'], 'required'];
 
-
-
-    // public function getUrl(): string
-    // {
-    //     return $this->getUser() ? $this->userPath.'-'.$this->getUser()->id.'-'.$this->getUser()->username : '';
-    // }
-
-    // public function getText(): string
-    // {
-    //     if($this->customText != '')
-    //     {
-    //         return $this->customText;
-    //     }
-    //     return $this->getUser()->fullName ?? $this->getUrl() ?? '';
-    // }
-
-    // public function getUser()
-    // {
-    //     if(is_null($this->_user))
-    //     {
-    //         $this->_user = Craft::$app->getUsers()->getUserById((int) $this->value);
-    //     }
-    //     return $this->_user;
-    // }
-
+        return $rules;
+    }
 }

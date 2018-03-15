@@ -1,96 +1,74 @@
 {% import "assetup/_macros" as macros %}
 
-{#
-    {{ craft.assetUp.uploader({
+{% set uploader = uploader ?? false %}
+{% if uploader and uploader.validate() %}
 
-        id: 'uid',
-        name: 'name',
-        assets: globalFields.images,
+    <div id="{{ uploader.id }}" class="assetup--uploader assetup--layout-{{ uploader.layout }}{{ uploader.class ? ' '~uploader.class }}">
 
-        field: 'fieldHandle | id',
+        {% if uploader.name %}
+            <input type="hidden" name="{{ uploader.name|replace({'[]': ''}) }}" value="" />
+        {% endif %}
 
-        source: 'sourceHandle | sourceId',
-        folder: 'path/to/folder',
-        limit: null,
-        maxSize: '',
-        acceptedFileTypes: '',
+        <ul id="{{ uploader.id }}Assets" class="assetup--assets">
 
-        label: 'Select an asset',
-        class: 'custom-class',
+            {% for asset in uploader.assets %}
 
-        defaultImageView: 'background | img',
+                {{ macros.preview({
+                    asset: asset,
+                    name: uploader.name,
+                    transform: uploader.transform,
+                    enableReorder: uploader.enableReorder,
+                    enableRemove: uploader.enableRemove,
+                    preview: uploader.preview
+                }) }}
 
-        enableDropToUpload: true,
-        enableCss: true,
-        enableReorder: true,
-        enableRemove: true,
+            {% endfor %}
 
-    }) }}
-#}
+        </ul>
 
-{% set name = name ?? false %}
+        <div class="assetup--errors assetup--isHidden">
 
-{% set limit = limit ?? null %}
+        </div>
 
-{% set transform = transform ?? '' %}
-{% set enableReorder = enableReorder ?? true %}
-{% set enableRemove = enableRemove ?? true %}
+        <div class="assetup--progress assetup--isHidden">
 
-{% set label = label ?? 'Upload your files' %}
+        </div>
 
-<div id="{{ id }}" class="assetup--uploader">
+        <div class="assetup--controls{{ uploader.limit and (uploader.assets|length - 1) >= uploader.limit ? ' assetup--isHidden' }}">
 
-    {% if name %}
-        <input type="hidden" name="{{ name|replace({'[]': ''}) }}" value="" />
-    {% endif %}
+            <div class="assetup--controls-inner">
 
-    <ul id="{{ id }}Assets" class="assetup--assets">
+                <a href="javascript:;" class="assetup--upload">
+                   {#  {{ macros.icon({ icon: 'upload' }) }} #}
+                    <span class="assetup--label">{{ uploader.uploadText }}</span>
+                    {% if uploader.enableDropToUpload %}
+                        <span class="assetup--or">{{ 'or'|t('assetup') }}</span>
+                        <span class="assetup--btn">{{ uploader.dropText }}</span>
+                    {% endif %}
+                </a>
 
-        {% for asset in assets %}
+                <input type="file" name="assetUpAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />
 
-            {{ macros.preview({
-                asset: asset,
-                name: name,
-                transform: transform,
-                enableReorder: enableReorder,
-                enableRemove: enableRemove,
-                view: 'image'
-            }) }}
+            </div>
+        </div>
 
+    </div>
+
+{% else %}
+
+    <p>Uploader is not ready, please fix the errors below:</p>
+    {% set errors = uploader ? uploader.getErrors() : ['Uploader not defined'] %}
+    <ul>
+        {% for error in errors %}
+            <li>{{ error|filter|join(' ') }}</li>
         {% endfor %}
-
     </ul>
+{% endif %}
 
-    <div class="assetup--errors assetup--isHidden">
 
-    </div>
 
-    <div class="assetup--progress assetup--isHidden">
 
-    </div>
 
-    <div class="assetup--controls{{ limit and (assets|length - 1) >= limit ? ' assetup--isHidden' }}">
-
-        <a href="javascript:;" class="assetup--upload">
-            {{ macros.icon({ icon: 'upload' }) }}
-            <span class="assetup--label">{{ label }}</p>
-            <span class="assetup--or">or</span>
-            <span class="assetup--btn">Browse files</span>
-        </a>
-
-        <input type="file" name="assetUpAssetInput" style="display:none;"
-
-            data-element-id="{{ elementId ?? '' }}"
-            data-field-id="{{ fieldId ?? ''  }}"
-            data-folder="{{ folder ?? ''  }}"
-            data-source="{{ source ?? ''  }}"
-            data-transform="{{ transform }}"
-
-            {{ not limit or limit > 1 ? ' multiple' }} />
-
-    </div>
-
-</div>
 
 {#
 {% set types = ['files', 'images'] %}

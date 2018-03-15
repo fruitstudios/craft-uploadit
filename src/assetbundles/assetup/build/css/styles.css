@@ -1,27 +1,35 @@
 /* Uploader */
 
 .assetup--uploader {
-    border:1px solid #ccc;
-    padding: 5px;
-    margin:30px;
     position: relative;
 }
 
 .assetup--assets {
     list-style-type: none;
-    margin:0;
-    padding:0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 0;
 }
 
 /* Asset */
 
 .assetup--asset {
-    width: 300px;
-    height: 100px;
+    width: 50%;
+    height: auto;
+    position: relative;
     display: block;
-    margin-bottom:5px;
-    border:2px solid #333;
 }
+
+.assetup--asset img {
+    display: block;
+}
+
+
+.assetup--asset:hover {
+    cursor: all-scroll;
+}
+
 
 .assetup--asset-background {}
 .assetup--asset-image {}
@@ -31,18 +39,76 @@
     max-height: 100%;
 }
 
+.assetup--remove {
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 4px;
+    padding: 4px;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.assetup--remove svg {
+    width: 16px;
+    height: 16px;
+}
+
+.assetup--handle {
+    position: absolute;
+    display: none;
+}
+
+.assetup--asset-chosen {
+    opacity: 0.5;
+}
+.assetup--asset-ghost {
+    opacity: 1;
+}
+
 /* Controls */
 .assetup--controls {
-    width: 300px;
-    background: #ccc;
+    width: 50%;
+    border: 2px dashed lightgrey;
     position: relative;
+}
+
+.assetup--controls::after {
+    content: '';
+    display: block;
+    padding-bottom: 100%;
+}
+
+.assetup--controls-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .assetup--upload {
     display:block;
-    background: red;
+    text-align: center;
+    text-decoration: none;
+    color: #3F4E61;
 }
-.assetup--label {}
+.assetup--label {
+    display: block;
+    padding: 8px 16px;
+    margin-bottom: 4px;
+
+    color: white;
+    background-color: #3F4E61;
+}
 .assetup--or {}
 .assetup--btn {}
 

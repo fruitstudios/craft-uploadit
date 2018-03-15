@@ -1,12 +1,29 @@
+var assetups = {};
+
 var AssetUp = (function () {
 	'use strict';
 
 	var defaults = {
 		sortable: {
 			animation: 150,
-			handle: ".assetup--handle",
+			// handle: ".assetup--handle",
 			draggable: ".assetup--asset",
-		}
+			dragClass: "assetup--asset-dragging",
+			ghostClass: "assetup--asset-ghost",
+			chosenClass: "assetup--asset-chosen",
+			filter: ".assetup--remove",
+			onFilter: function (evt) {
+				evt.item.parentNode.removeChild(evt.item);
+			}
+		},
+		layout: 'grid',
+		preview: 'image',
+		csrfTokenName: '',
+		csrfTokenValue: '',
+		name: false,
+		transform: '',
+		enableReorder: true,
+		enableRemove: true,
 	};
 
 	var dom = {
@@ -117,6 +134,7 @@ var AssetUp = (function () {
 				return;
         	}
         	event.preventDefault();
+        	event.stopPropagation();
 
 	        var asset = event.target.closest('.assetup--asset');
 	        if (asset) {
@@ -182,14 +200,15 @@ var AssetUp = (function () {
 	        //
 	        // Will need:
 	        // folderId or fieldId
-	        // elementId - need this with fieldId requests TODO: work out if needed.
+	        // elementId - need this with fieldId requests
 
 
 			var xhr = new XMLHttpRequest();
 			var formData = new FormData();
 			formData.append('action', 'assets/save-asset');
 			if(settings.fieldId) {
-				formData.append('fieldId', settings.field); // TODO: This need to be properly hoekd up with the new model
+				formData.append('elementId', settings.elementId); // TODO: This need to be properly hoekd up with the new model
+				formData.append('fieldId', settings.fieldId); // TODO: This need to be properly hoekd up with the new model
 			} else {
 				formData.append('folderId', 6);
 			}
@@ -328,10 +347,11 @@ var AssetUp = (function () {
 				action: 'assetup/upload/asset-preview',
 				[settings.csrfTokenName]: settings.csrfTokenValue,
 				assetId: id,
-				view: 'image',
-				transfrom: '',
-				allowReorder: true,
-				allowRemove: true,
+				name: settings.name,
+				preview: settings.preview,
+				transform: settings.transform,
+				enableReorder: settings.enableReorder,
+				enableRemove: settings.enableRemove,
 			};
 
 			xhr.open('POST', '/', true);
@@ -399,6 +419,10 @@ var AssetUp = (function () {
 	return constructor;
 
 })();
+
+ready(function () {
+
+});
 
 
 //     var saveAsset = function(event, $fileInput, asset) {

@@ -23,19 +23,22 @@ class UploadController extends Controller
         $assetId = $request->getParam('assetId');
 
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
-        if(!$asset) {
+        if(!$asset)
+        {
             return $this->asErrorJson(Craft::t('assetup', 'Could not get asset for preview'));
         }
 
         $html = AssetUpHelper::renderTemplate('assetup/_macros/_preview', [
             'asset' => $asset,
+            'name' => $request->getParam('name', false),
             'view' => $request->getParam('view', 'image'),
             'transform' => $request->getParam('transform', ''),
             'enableReorder' => $request->getParam('enableReorder', true),
             'enableRemove' => $request->getParam('enableRemove', true),
         ]);
 
-        if(!$asset) {
+        if(!$asset)
+        {
             return $this->asErrorJson(Craft::t('assetup', 'Could not asset preview'));
         }
 
