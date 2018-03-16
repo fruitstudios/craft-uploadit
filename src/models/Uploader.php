@@ -1,13 +1,13 @@
 <?php
 namespace fruitstudios\assetup\models;
 
+use fruitstudios\assetup\AssetUp;
 use fruitstudios\assetup\helpers\AssetUpHelper;
 use fruitstudios\assetup\assetbundles\assetup\AssetUpAssetBundle;
 
 use Craft;
 use craft\web\View;
 use craft\base\Model;
-use craft\fields\Assets as AssetsField;
 use craft\helpers\Json as JsonHelper;
 
 class Uploader extends Model
@@ -28,6 +28,12 @@ class Uploader extends Model
     // Field (id | handle)
     public $field;
 
+    // Volume (id | handle)
+    public $volume;
+
+    // Folder (id | path)
+    public $folder;
+
     // Uploader Layout (grid | compact-grid | list)
     public $layout = 'grid';
 
@@ -43,8 +49,7 @@ class Uploader extends Model
 
     public $transform;
 
-    public $source;
-    public $folder;
+
     public $limit;
     public $maxSize;
     public $acceptedFileTypes;
@@ -113,30 +118,68 @@ class Uploader extends Model
     {
         if(is_null($this->_targetField))
         {
-            $this->_targetField = false;
-            if($this->field)
-            {
-                $field = is_numeric($this->field) ? AssetUpHelper::getFieldById($this->field) : AssetUpHelper::getFieldByHandle($this->field);
-                if($field && get_class($field) == AssetsField::class)
-                {
-                    $this->_targetField = $field;
-                }
-            }
+            $this->_targetField = AssetUp::$plugin->service->getFieldByHandleOrId($this->field);
         }
         return $this->_targetField;
     }
 
+    // getTargetFolder()
+    // This can be made up of a volume + an optinal path/to/folder
+    // If we dont have a source lets just grab the first asset source to upload to
     public function getTargetFolder()
     {
         if(is_null($this->_targetFolder))
         {
-            $this->_targetFolder = false;
+            $targetFolderId = false;
 
-            // This can be made up of a source + an optinal path/to/folder
-            // AssetUpHelper::getTagetFolderId($source, $path = null, $create = true);
+            // Folder ID
+            if(is_numeric($this->folder))
+            {
+                $targetFolderId = Craft::$app->getAssets()->getFolderById($this->folder)->id ?? false;
+            }
 
-            // If we dont have a source lets just grab the first asset source to upload to
+            // Volume
+            if(!$targetFolderId)
+            {
+                // Get volume first
+                if($this->volume)
+                {
+                    $targetVolume = AssetUp::$plugin->service->getVolumeByHandleOrId($this->volume);
+                    if(!$targetVolume)
+                    {
+                        $targetVolume = AssetUp::$plugin->service->getFirstViewableVolume();
+                        if(!$targetVolume)
+                        {
+                            // Handle Error: We cant get a volume to work with
+                            //             : Should getFirstViewableVolume() throw an exception or here
+                            $targetVolume = false;
+                        }
+                    }
+                }
 
+                // We have volume, lets try and get the folder
+                if($targetVolume)
+                {
+                    // If there is a folder path lets check if the path exists
+                    if(is_string($this->folder))
+                    {
+
+                        $targetFolderId = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($this->folder, $targetVolume, false);
+                        if(!$targetFolderId)
+                        {
+                            // Handle Error: Specified path doesnt exist in the selected volume
+                            //             : Should ensureFolderByFullPathAndVolume() throw an exception or here
+                        }
+                    }
+                    else
+                    {
+                        // Get volume top folder id
+                        $targetFolderId = Craft::$app->getVolumes()->ensureTopFolder($targetVolume);
+                    }
+                }
+            }
+
+            $this->_targetFolder = $targetFolderId;
         }
         return $this->_targetFolder;
     }

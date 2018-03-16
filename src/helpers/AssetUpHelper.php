@@ -5,15 +5,11 @@ namespace fruitstudios\assetup\helpers;
 use Craft;
 use craft\web\View;
 use craft\db\Query;
+use craft\fields\Assets as AssetsField;
 
 class AssetUpHelper
 {
-    // Private
-    // =========================================================================
-
-    private static $_fieldsMap;
-
-    // Public Methods
+    // Template
     // =========================================================================
 
     public static function renderTemplate(string $template, array $variables = [])
@@ -28,12 +24,23 @@ class AssetUpHelper
         return $html;
     }
 
+    // Field Map
+    // =========================================================================
+
+    private static $_fieldsMapType = AssetsField::class;
+    private static $_fieldsMap;
+
+    public static function getFieldsMap()
+    {
+        self::_buildFieldsMap();
+        return self::$_fieldsMap;
+    }
 
     public static function getFieldByHandle(string $handle)
     {
         self::_buildFieldsMap();
         $fieldId = self::$_fieldsMap[$handle] ?? false;
-        return $fieldId ? self::getFieldById($fieldId) : false;
+        return $fieldId ? Craft::$app->getFields()->getFieldById($fieldId) : false;
     }
 
     public static function getFieldIdByHandle(string $handle)
@@ -42,26 +49,13 @@ class AssetUpHelper
         return self::$_fieldsMap[$handle] ?? false;
     }
 
-    public static function getFieldById(int $id)
-    {
-        return Craft::$app->getFields()->getFieldById($id);
-    }
-
-    public static function getFieldsMap()
-    {
-        self::_buildFieldsMap();
-        return self::$_fieldsMap;
-    }
-
-    // Private Methods
-    // =========================================================================
-
     private static function _buildFieldsMap()
     {
         if (self::$_fieldsMap === null) {
 
             $fields = (new Query())
                 ->select(['id', 'handle', 'context'])
+                ->where(['type' => self::$_fieldsMapType])
                 ->from(['{{%fields}}'])
                 ->all();
 
