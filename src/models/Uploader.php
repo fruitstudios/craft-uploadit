@@ -18,53 +18,63 @@ class Uploader extends Model
     private $_targetField;
     private $_targetFolder;
 
-    private $_fieldId;
-    private $_elementId;
-    private $_folderId;
-
     // Public
     // =========================================================================
 
     public $id;
+
+    /**
+     * @var string|null Name
+     * Input name for this uploader, if null standalone uploader setup
+     */
     public $name;
 
-    // Assets (array[CraftAssets])
+    // Assets - Asset[] | null
     public $assets;
 
-    // Field (id | handle)
+    // Field ID
+    public $fieldId;
+
+    // Field - id | handle | Field | null
     public $field;
 
-    // Volume (id | handle)
+    // Element ID
+    public $elementId;
+
+    // Element - id | Element | null
+    public $element;
+
+    // Volume - id | handle | null
     public $volume;
 
-    // Folder (id | path)
+    // Folder ID
+    public $folderId;
+
+    // Folder - id | path
     public $folder;
 
-    // Uploader Layout (grid | compact-grid | list)
-    public $layout = 'grid';
+    // Uploader Layout
+    public $layout = 'grid'; // grid | compact-grid | list
 
-    // Preview (file | background | img)
-    public $preview = 'file';
+    // Preview
+    public $preview = 'file'; // file | background | img
 
-
-
-
-
-
+    // Settings
     public $enableDropToUpload = true;
     public $enableReorder = true;
     public $enableRemove = true;
 
+    // Style /Text
+    public $customClass;
     public $selectText;
     public $dropText;
 
-    public $transform;
-
+    // Asset
+    public $transform = '';
     public $limit;
     public $maxSize;
     public $acceptedFileTypes;
 
-    public $classes;
 
     // Public Methods
     // =========================================================================
