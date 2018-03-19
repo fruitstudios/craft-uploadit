@@ -18,11 +18,17 @@ class Uploader extends Model
     private $_targetField;
     private $_targetFolder;
 
+    private $_fieldId;
+    private $_elementId;
+    private $_folderId;
+
     // Public
     // =========================================================================
 
     public $id;
     public $name;
+
+    // Assets (array[CraftAssets])
     public $assets;
 
     // Field (id | handle)
@@ -40,6 +46,11 @@ class Uploader extends Model
     // Preview (file | background | img)
     public $preview = 'file';
 
+
+
+
+
+
     public $enableDropToUpload = true;
     public $enableReorder = true;
     public $enableRemove = true;
@@ -49,12 +60,11 @@ class Uploader extends Model
 
     public $transform;
 
-
     public $limit;
     public $maxSize;
     public $acceptedFileTypes;
 
-    public $class;
+    public $classes;
 
     // Public Methods
     // =========================================================================
@@ -71,7 +81,25 @@ class Uploader extends Model
         }
     }
 
-    public function getJavascriptVariables(bool $encode = true)
+    public function render()
+    {
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(AssetUpAssetBundle::class);
+        $view->registerJs('new AssetUp('.$this->getJavascriptVariables().');', View::POS_END);
+        return $this->getHtml();
+    }
+
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['id'], 'required'];
+
+        return $rules;
+    }
+
+    // Return JSON array
+    // Which settings are we sending over to craft
+    private function _getJavascriptVariables(bool $encode = true)
     {
         // Default
         $settings = [
@@ -114,7 +142,7 @@ class Uploader extends Model
         ]);
     }
 
-    public function getTargetField()
+    private function _getTargetField()
     {
         if(is_null($this->_targetField))
         {
@@ -126,7 +154,7 @@ class Uploader extends Model
     // getTargetFolder()
     // This can be made up of a volume + an optinal path/to/folder
     // If we dont have a source lets just grab the first asset source to upload to
-    public function getTargetFolder()
+    private function _getTargetFolder()
     {
         if(is_null($this->_targetFolder))
         {
@@ -184,19 +212,4 @@ class Uploader extends Model
         return $this->_targetFolder;
     }
 
-    public function render()
-    {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(AssetUpAssetBundle::class);
-        $view->registerJs('new AssetUp('.$this->getJavascriptVariables().');', View::POS_END);
-        return $this->getHtml();
-    }
-
-    public function rules()
-    {
-        $rules = parent::rules();
-        $rules[] = [['id'], 'required'];
-
-        return $rules;
-    }
 }
