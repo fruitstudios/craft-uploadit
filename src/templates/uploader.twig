@@ -1,9 +1,9 @@
 {% import "assetup/_macros" as macros %}
 
 {% set uploader = uploader ?? false %}
-{% if uploader and uploader.validate() %}
+{% if uploader and not uploader.hasErrors() %}
 
-    <div id="{{ uploader.id }}" class="assetup--uploader assetup--layout-{{ uploader.layout }}{{ uploader.class ? ' '~uploader.class }}">
+    <div id="{{ uploader.id }}" class="assetup--uploader assetup--layout-{{ uploader.layout }}{{ uploader.customClass ? ' '~uploader.customClass }}">
 
         {% if uploader.name %}
             <input type="hidden" name="{{ uploader.name|replace({'[]': ''}) }}" value="" />

@@ -95,7 +95,7 @@ class Uploader extends Model
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(AssetUpAssetBundle::class);
-        $view->registerJs('new AssetUp('.$this->getJavascriptVariables().');', View::POS_END);
+        $view->registerJs('new AssetUp('.$this->_getJavascriptVariables().');', View::POS_END);
         return $this->getHtml();
     }
 
@@ -103,8 +103,28 @@ class Uploader extends Model
     {
         $rules = parent::rules();
         $rules[] = [['id'], 'required'];
+        $rules[] = [['elementId'], 'validateElementId'];
 
         return $rules;
+    }
+
+    private function validateElementId()
+    {
+        if($this->elementId === 555)
+        {
+            $this->addError('elementId', Craft::t('assetup', 'A generic 555 elementId'));
+        }
+    }
+
+    public function beforeValidate()
+    {
+        $this->elementId = 555;
+
+        if (!$this->elementId) {
+            $this->elementId = 555;
+        }
+
+        return parent::beforeValidate();
     }
 
     // Return JSON array
@@ -130,7 +150,7 @@ class Uploader extends Model
         $settings['elementId'] = false;
         $settings['folderId'] = false;
 
-        $field = $this->getTargetField();
+        $field = $this->_getTargetField();
         if($field)
         {
             // Set any addional settings based on the filed here
@@ -138,7 +158,7 @@ class Uploader extends Model
         }
         else
         {
-            $settings['folderId'] = $this->getTargetFolder();
+            $settings['folderId'] = $this->_getTargetFolder();
         }
 
         return $encode ? JsonHelper::encode($settings) : $settings;
