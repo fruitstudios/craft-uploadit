@@ -197,8 +197,8 @@ var AssetUp = (function () {
 
 	    api.uploadAsset = function (asset, i) {
 
-			// setElementLoading(controls, true);
-
+			setElementLoading(dom.uploader, true);
+			dom.progress.classList.remove('assetup--isHidden');
 	        //
 	        // Will need:
 	        // folderId or fieldId
@@ -370,7 +370,13 @@ var AssetUp = (function () {
 
 				if (xhr.status === 200) {
 
-					dom.assets.innerHTML += xhr.response.html;
+					dom.controls.insertAdjacentHTML('beforebegin', xhr.response.html);
+
+					// Temp Uploader Progress
+					setTimeout(function() {
+						setElementLoading(dom.uploader, false);
+						dom.progress.classList.add('assetup--isHidden');
+					}, 2000);
 
 					// This is where  we should set progress to complete
 					// updateProgress(i, 100) // <- Add this
