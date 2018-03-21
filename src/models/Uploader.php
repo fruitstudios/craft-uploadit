@@ -7,16 +7,44 @@ use fruitstudios\assetup\assetbundles\assetup\AssetUpAssetBundle;
 
 use Craft;
 use craft\web\View;
+use craft\base\ElementInterface;
+use craft\base\FieldInterface;
+use craft\base\VolumeInterface;
 use craft\base\Model;
+use craft\models\VolumeFolder;
 use craft\helpers\Json as JsonHelper;
 
 class Uploader extends Model
 {
+
+    // Constants
+    // =========================================================================
+
+    const TARGET_FIELD = 'Field';
+    const TARGET_FOLDER = 'Folder';
+
     // Private
     // =========================================================================
 
-    private $_targetField;
-    private $_targetFolder;
+    private $_target;
+    private $_field;
+    private $_element;
+    private $_folder;
+
+    private $_defaultJavascriptVariables;
+    private $_javascriptProperties = [
+        'id',
+        'name',
+        'target',
+        'preview',
+        'transform',
+        'limit',
+        'maxSize',
+        'acceptedFileTypes',
+        'enableDropToUpload',
+        'enableReorder',
+        'enableRemove',
+    ];
 
     // Public
     // =========================================================================
@@ -32,23 +60,14 @@ class Uploader extends Model
     // Assets - Asset[] | null
     public $assets;
 
-    // Field ID
-    public $fieldId;
-
     // Field - id | handle | Field | null
     public $field;
-
-    // Element ID
-    public $elementId;
 
     // Element - id | Element | null
     public $element;
 
     // Volume - id | handle | null
     public $volume;
-
-    // Folder ID
-    public $folderId;
 
     // Folder - id | path
     public $folder;
@@ -64,8 +83,10 @@ class Uploader extends Model
     public $enableReorder = true;
     public $enableRemove = true;
 
-    // Style /Text
+    // Css
     public $customClass;
+
+    // Language
     public $selectText;
     public $dropText;
 
@@ -89,6 +110,13 @@ class Uploader extends Model
         {
             $this->setAttributes($attributes, false);
         }
+
+        $this->_defaultJavascriptVariables = [
+            'csrfTokenName' => Craft::$app->getConfig()->getGeneral()->csrfTokenName,
+            'csrfTokenValue' => Craft::$app->getRequest()->getCsrfToken(),
+        ];
+
+        $this->validate();
     }
 
     public function render()
@@ -96,150 +124,195 @@ class Uploader extends Model
         $view = Craft::$app->getView();
         $view->registerAssetBundle(AssetUpAssetBundle::class);
         $view->registerJs('new AssetUp('.$this->_getJavascriptVariables().');', View::POS_END);
-        return $this->getHtml();
+
+        $this->validate();
+        // $this->preRender(); // TODO SET THE LIMIT ETC ETC PRE RENDER
+        return AssetUpHelper::renderTemplate('assetup/uploader', [
+            'uploader' => $this
+        ]);
     }
 
     public function rules()
     {
         $rules = parent::rules();
         $rules[] = [['id'], 'required'];
-        $rules[] = [['elementId'], 'validateElementId'];
-
+        $rules[] = [['target'], 'validateTarget'];
         return $rules;
     }
 
-    private function validateElementId()
+    public function validateTarget()
     {
-        if($this->elementId === 555)
+        // Field set as target
+        if($this->field)
         {
-            $this->addError('elementId', Craft::t('assetup', 'A generic 555 elementId'));
+            // Ok so an element is required then
+            if(is_null($this->element))
+            {
+                $this->addError('field', Craft::t('assetup', 'A valid element is required when a using a field as your asset target.'));
+                return false;
+            }
+
+            // Element provided lets check it
+            $element = $this->element instanceof ElementInterface ? $this->element : false;
+            if(!$element)
+            {
+                $element = Craft::$app->getElements()->getElementById((int) $this->element);
+            }
+
+            // Element is a duffer
+            if(!$element)
+            {
+                $this->addError('element', Craft::t('assetup', 'Could not locate your element.'));
+                return false;
+            }
+
+            // Store the element
+            $this->_element = $element;
+
+            // Got an element lets check the field
+            $field = $this->field instanceof FieldInterface ? $this->field : false;
+            if(!$field)
+            {
+                $field = AssetUp::$plugin->service->getAssetFieldByHandleOrId($this->field);
+            }
+
+            // Field is a duffer
+            if(!$field)
+            {
+                $this->addError('field', Craft::t('assetup', 'Could not locate your field.'));
+                return false;
+            }
+
+            // Store the field
+            $this->_field = $field;
+            $this->_setTarget(TARGET_FIELD);
+            return true;
         }
+
+        // Volume and / or folder set as target
+        if($this->volume || $this->folder)
+        {
+            // Folder model supplied
+            if($this->folder instanceof VolumeFolder)
+            {
+                $this->_folder = $this->folder;
+                $this->_setTarget(TARGET_FOLDER);
+                return true;
+            }
+
+            // Folder id supplied
+            if(is_numeric($this->folder))
+            {
+                $folder = Craft::$app->getAssets()->getFolderById((int) $this->folder);
+
+                // Folder is a duffer
+                if(!$folder)
+                {
+                    $this->addError('folder', Craft::t('assetup', 'We cant locate any folder by the id supplied.'));
+                    return false;
+                }
+
+                // We have a folder
+                $this->_folder = $this->folder;
+                $this->_setTarget(TARGET_FOLDER);
+                return true;
+            }
+
+
+            // Get supplied volume
+            $volume = $this->volume instanceof VolumeInterface ? $this->volume : false;
+            if(!$volume)
+            {
+                $volume = AssetUp::$plugin->service->getVolumeByHandleOrId($this->volume);
+            }
+
+            // Volume is a duffer
+            if(!$volume)
+            {
+                $this->addError('volume', Craft::t('assetup', 'We cant get a volume to work with.'));
+                return false;
+
+                // IDEA: Do we want to grab the first if nothing supplied
+                // if(!$targetVolume)
+                // {
+                //     $targetVolume = AssetUp::$plugin->service->getFirstViewableVolume();
+                // }
+            }
+
+            // We must have volume,
+            if(is_string($this->folder))
+            {
+                // if the foldler is a path does it exist
+                $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($this->folder, $volume, false);
+                if(!$folder)
+                {
+                    $this->addError('folder', Craft::t('assetup', 'We cant find the folder path in the volume supplied.'));
+                    return false;
+                }
+
+                // We have a folder
+                $this->_folder = $this->folder;
+                $this->_setTarget(TARGET_FOLDER);
+                return true;
+            }
+            else
+            {
+                // Get volume top folder id
+                $folderId = Craft::$app->getVolumes()->ensureTopFolder($volume);
+                $folder = Craft::$app->getAssets()->getFolderById($folderId);
+                if(!$folder)
+                {
+                    $this->addError('folder', Craft::t('assetup', 'We cant get or create the top folder for the volume you supplied.'));
+                    return false;
+                }
+
+                // We have a folder
+                $this->_folder = $folder;
+                $this->_setTarget(TARGET_FOLDER);
+                return true;
+            }
+        }
+
+        $this->addError('target', Craft::t('assetup', 'A valid target field, volume or folder must be defined.'));
+        return false;
     }
 
-    public function beforeValidate()
+    public function getTarget()
     {
-        $this->elementId = 555;
+        return $this->_target ?? false;
+    }
 
-        if (!$this->elementId) {
-            $this->elementId = 555;
+    // Private Methods
+    // =========================================================================
+
+    private function _setTarget($type)
+    {
+        $target = [ 'type' => $type ];
+        switch ($type)
+        {
+            case TARGET_FIELD:
+                $target['fieldId'] = $this->_field->id ?? null;
+                $target['elementId'] = $this->_element->id ?? null;
+                break;
+
+            case TARGET_FOLDER:
+                $target['folderId'] = $this->_folder->id ?? null;
+                break;
         }
-
-        return parent::beforeValidate();
+        return $target;
     }
 
     // Return JSON array
     // Which settings are we sending over to craft
     private function _getJavascriptVariables(bool $encode = true)
     {
-        // Default
-        $settings = [
-            'id' => $this->id,
-            'name' => $this->name,
-            'layout' => $this->layout,
-            'preview' => $this->preview,
-            'enableDropToUpload' => $this->enableDropToUpload,
-            'enableReorder' => $this->enableReorder,
-            'enableRemove' => $this->enableRemove,
-            'csrfTokenName' => Craft::$app->getConfig()->getGeneral()->csrfTokenName,
-            'csrfTokenValue' => Craft::$app->getRequest()->getCsrfToken(),
-        ];
-
-
-        // Source
-        $settings['fieldId'] = false;
-        $settings['elementId'] = false;
-        $settings['folderId'] = false;
-
-        $field = $this->_getTargetField();
-        if($field)
+        $settings = $this->_defaultJavascriptVariables;
+        foreach ($this->_javascriptProperties as $property)
         {
-            // Set any addional settings based on the filed here
-            $settings['fieldId'] = $field->id;
-        }
-        else
-        {
-            $settings['folderId'] = $this->_getTargetFolder();
+            $settings[$property] = $this->$property;
         }
 
         return $encode ? JsonHelper::encode($settings) : $settings;
-    }
-
-    public function getHtml()
-    {
-        $this->validate();
-        return AssetUpHelper::renderTemplate('assetup/uploader', [
-            'uploader' => $this
-        ]);
-    }
-
-    private function _getTargetField()
-    {
-        if(is_null($this->_targetField))
-        {
-            $this->_targetField = AssetUp::$plugin->service->getFieldByHandleOrId($this->field);
-        }
-        return $this->_targetField;
-    }
-
-    // getTargetFolder()
-    // This can be made up of a volume + an optinal path/to/folder
-    // If we dont have a source lets just grab the first asset source to upload to
-    private function _getTargetFolder()
-    {
-        if(is_null($this->_targetFolder))
-        {
-            $targetFolderId = false;
-
-            // Folder ID
-            if(is_numeric($this->folder))
-            {
-                $targetFolderId = Craft::$app->getAssets()->getFolderById($this->folder)->id ?? false;
-            }
-
-            // Volume
-            if(!$targetFolderId)
-            {
-                // Get volume first
-                if($this->volume)
-                {
-                    $targetVolume = AssetUp::$plugin->service->getVolumeByHandleOrId($this->volume);
-                    if(!$targetVolume)
-                    {
-                        $targetVolume = AssetUp::$plugin->service->getFirstViewableVolume();
-                        if(!$targetVolume)
-                        {
-                            // Handle Error: We cant get a volume to work with
-                            //             : Should getFirstViewableVolume() throw an exception or here
-                            $targetVolume = false;
-                        }
-                    }
-                }
-
-                // We have volume, lets try and get the folder
-                if($targetVolume)
-                {
-                    // If there is a folder path lets check if the path exists
-                    if(is_string($this->folder))
-                    {
-
-                        $targetFolderId = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($this->folder, $targetVolume, false);
-                        if(!$targetFolderId)
-                        {
-                            // Handle Error: Specified path doesnt exist in the selected volume
-                            //             : Should ensureFolderByFullPathAndVolume() throw an exception or here
-                        }
-                    }
-                    else
-                    {
-                        // Get volume top folder id
-                        $targetFolderId = Craft::$app->getVolumes()->ensureTopFolder($targetVolume);
-                    }
-                }
-            }
-
-            $this->_targetFolder = $targetFolderId;
-        }
-        return $this->_targetFolder;
     }
 
 }

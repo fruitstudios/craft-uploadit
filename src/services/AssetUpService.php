@@ -12,7 +12,7 @@ class AssetUpService extends Component
     // Public Methods
     // =========================================================================
 
-    public function getFieldByHandleOrId($handleOrId)
+    public function getAssetFieldByHandleOrId($handleOrId)
     {
     	if(!$handleOrId)
     	{

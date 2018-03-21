@@ -1,6 +1,7 @@
 {% import "assetup/_macros" as macros %}
 
 {% set uploader = uploader ?? false %}
+
 {% if uploader and not uploader.hasErrors() %}
 
     <div id="{{ uploader.id }}" class="assetup--uploader assetup--layout-{{ uploader.layout }}{{ uploader.customClass ? ' '~uploader.customClass }}">
@@ -52,13 +53,19 @@
 
 {% else %}
 
-    <p>Uploader is not ready, please fix the errors below:</p>
-    {% set errors = uploader ? uploader.getErrors() : ['Uploader not defined'] %}
-    <ul>
-        {% for error in errors %}
-            <li>{{ error|filter|join(' ') }}</li>
-        {% endfor %}
-    </ul>
+    <div class="assetup--notice">
+        {% if uploader.hasErrors() %}
+            <p>Uploader Not Ready</p>
+            <ul class="assetup--noticeErrors">
+                {% for error in uploader.getErrors() %}
+                    <li>{{ error|filter|join(', ') }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Uploader Not Found</p>
+        {% endif %}
+    </div>
+
 {% endif %}
 
 
