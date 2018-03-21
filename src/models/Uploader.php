@@ -20,8 +20,8 @@ class Uploader extends Model
     // Constants
     // =========================================================================
 
-    const TARGET_FIELD = 'Field';
-    const TARGET_FOLDER = 'Folder';
+    const TARGET_FIELD = 'field';
+    const TARGET_FOLDER = 'folder';
 
     // Private
     // =========================================================================
@@ -122,10 +122,12 @@ class Uploader extends Model
     public function render()
     {
         $view = Craft::$app->getView();
+
+        $this->validate();
+
         $view->registerAssetBundle(AssetUpAssetBundle::class);
         $view->registerJs('new AssetUp('.$this->_getJavascriptVariables().');', View::POS_END);
 
-        $this->validate();
         // $this->preRender(); // TODO SET THE LIMIT ETC ETC PRE RENDER
         return AssetUpHelper::renderTemplate('assetup/uploader', [
             'uploader' => $this
@@ -185,7 +187,7 @@ class Uploader extends Model
 
             // Store the field
             $this->_field = $field;
-            $this->_setTarget(TARGET_FIELD);
+            $this->_setTarget(self::TARGET_FIELD);
             return true;
         }
 
@@ -196,7 +198,7 @@ class Uploader extends Model
             if($this->folder instanceof VolumeFolder)
             {
                 $this->_folder = $this->folder;
-                $this->_setTarget(TARGET_FOLDER);
+                $this->_setTarget(self::TARGET_FOLDER);
                 return true;
             }
 
@@ -214,7 +216,7 @@ class Uploader extends Model
 
                 // We have a folder
                 $this->_folder = $this->folder;
-                $this->_setTarget(TARGET_FOLDER);
+                $this->_setTarget(self::TARGET_FOLDER);
                 return true;
             }
 
@@ -252,7 +254,7 @@ class Uploader extends Model
 
                 // We have a folder
                 $this->_folder = $this->folder;
-                $this->_setTarget(TARGET_FOLDER);
+                $this->_setTarget(self::TARGET_FOLDER);
                 return true;
             }
             else
@@ -268,7 +270,7 @@ class Uploader extends Model
 
                 // We have a folder
                 $this->_folder = $folder;
-                $this->_setTarget(TARGET_FOLDER);
+                $this->_setTarget(self::TARGET_FOLDER);
                 return true;
             }
         }
@@ -290,16 +292,16 @@ class Uploader extends Model
         $target = [ 'type' => $type ];
         switch ($type)
         {
-            case TARGET_FIELD:
+            case self::TARGET_FIELD:
                 $target['fieldId'] = $this->_field->id ?? null;
                 $target['elementId'] = $this->_element->id ?? null;
                 break;
 
-            case TARGET_FOLDER:
+            case self::TARGET_FOLDER:
                 $target['folderId'] = $this->_folder->id ?? null;
                 break;
         }
-        return $target;
+        $this->_target = $target;
     }
 
     // Return JSON array

@@ -24,6 +24,7 @@ var AssetUp = (function () {
 		transform: '',
 		enableReorder: true,
 		enableRemove: true,
+		target: false
 	};
 
 	var dom = {
@@ -207,14 +208,17 @@ var AssetUp = (function () {
 			var xhr = new XMLHttpRequest();
 			var formData = new FormData();
 			formData.append('action', 'assets/save-asset');
-			if(settings.fieldId) {
-				formData.append('elementId', settings.elementId); // TODO: This need to be properly hoekd up with the new model
-				formData.append('fieldId', settings.fieldId); // TODO: This need to be properly hoekd up with the new model
-			} else {
-				formData.append('folderId', 6);
+			formData.append('assets-upload', asset);
+			switch(settings.target.type) {
+				case('field'):
+					formData.append('elementId', settings.target.elementId);
+					formData.append('fieldId', settings.target.fieldId);
+					break;
+				case('folder'):
+					formData.append('folderId', settings.target.folderId);
+					break;
 			}
 			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
-			formData.append('assets-upload', asset);
 
 			xhr.open('POST', '/', true);
 			xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
