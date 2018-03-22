@@ -11,9 +11,12 @@ var AssetUp = (function () {
 			dragClass: "assetup--asset-dragging",
 			ghostClass: "assetup--asset-ghost",
 			chosenClass: "assetup--asset-chosen",
+			filter: ".assetup--controls",
 			filter: ".assetup--remove, .assetup--controls",
-			onFilter: function (evt) {
-				evt.item.parentNode.removeChild(evt.item);
+			onFilter: function (event) {
+				event.item.click();
+				// api.removeAsset(event.item);
+				// evt.item.parentNode.removeChild(evt.item);
 			}
 		},
 		layout: 'grid',
@@ -101,9 +104,8 @@ var AssetUp = (function () {
 		};
 
 		var checkLimit = function() {
-			console.log('checking limit');
-
-			if(settings.limit && api.getNumberOfUploadedAssets() >= settings.limit) {
+			var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
+			if(settings.limit && numberOfUploadedAssets >= settings.limit) {
 				dom.controls.classList.add('assetup--isHidden');
 			} else {
 				dom.controls.classList.remove('assetup--isHidden');
@@ -218,7 +220,6 @@ var AssetUp = (function () {
 		};
 
 		api.getNumberOfUploadedAssets = function () {
-			console.log(dom.assets.childElementCount);
 			return (dom.assets.childElementCount - 1);
 		}
 
@@ -242,10 +243,11 @@ var AssetUp = (function () {
 
 			// Check Limit
 			if(settings.limit) {
-				var leftOfLimit = settings.limit - api.getNumberOfUploadedAssets();
+				var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
+				var leftOfLimit = settings.limit - numberOfUploadedAssets;
 				if(assets.length > leftOfLimit)
 				{
-					api.setError('You can only upload another ' + leftOfLimit + 'assets');
+					api.setError('You can only upload another ' + leftOfLimit + ' assets');
 					return;
 				}
 			}
@@ -351,6 +353,7 @@ var AssetUp = (function () {
 	                imagesLoaded(preview, function() {
 						dom.controls.before(preview); // TODO: Some transition here, fade images in
 						updatePreviewProgress(i, 100);
+						checkLimit();
 	                });
 
 				} else {
@@ -365,11 +368,10 @@ var AssetUp = (function () {
 
 		api.removeAsset = function (asset) {
 			asset = asset || null;
-			// if(asset) {
-			// 	return;
-			// 	asset.remove();
-			// 	checkLimit();
-			// }
+			if(asset) {
+				asset.remove();
+				checkLimit();
+			}
 		}
 
 		api.init = function (options) {
@@ -391,6 +393,9 @@ var AssetUp = (function () {
 			initReorderAssets();
 			initDropToUpload();
 			initRemoveAssets();
+
+			// Checks
+			checkLimit();
 
 			// Input
 			dom.uploader.addEventListener('change', assetInputHandler, false);

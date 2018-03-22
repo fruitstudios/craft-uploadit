@@ -11,6 +11,8 @@
         uploader.customClass ? uploader.customClass : null,
     ]|filter|join(' ') %}
 
+    {# TODO: Assets - if assets|length is greater than limit, should i remove assets?  #}
+
     <div id="{{ uploader.id }}" class="{{ classes }}">
 
         {% if uploader.name %}
@@ -32,7 +34,8 @@
 
             {% endfor %}
 
-            <li class="assetup--controls{{ uploader.limit and (uploader.assets|length - 1) >= uploader.limit ? ' assetup--isHidden' }}">
+
+            <li class="assetup--controls{{ uploader.limit and uploader.assets|length >= uploader.limit ? ' assetup--isHidden' }}">
 
                 <div class="assetup--controls-inner">
 
