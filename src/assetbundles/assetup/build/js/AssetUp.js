@@ -11,10 +11,10 @@ var AssetUp = (function () {
 			dragClass: "assetup--asset-dragging",
 			ghostClass: "assetup--asset-ghost",
 			chosenClass: "assetup--asset-chosen",
-			filter: ".assetup--controls",
-			filter: ".assetup--remove, .assetup--controls",
+			filter: ".assetup--controls, .assetup--remove",
+			// filter: ".assetup--remove, .assetup--controls",
 			onFilter: function (event) {
-				event.item.click();
+				// event.item.click();
 				// api.removeAsset(event.item);
 				// evt.item.parentNode.removeChild(evt.item);
 			}
@@ -37,6 +37,7 @@ var AssetUp = (function () {
 		input: null,
 		errors: null,
 		progress: null,
+		overlay: null, // TODO: Possibly remove when upload progress reworked.
 		uploadPercent: null,
 	};
 
@@ -96,11 +97,15 @@ var AssetUp = (function () {
 		var startProcessingUploads = function () {
 			dom.uploader.classList.add('assetup--isLoading')
 			dom.progress.classList.remove('assetup--isHidden')
+			// TODO: POssibly remove when upload progress reworked.
+			dom.overlay.classList.remove('assetup--isHidden')
 		};
 
 		var stoppedProcessingUploads = function () {
 			dom.uploader.classList.remove('assetup--isLoading')
 			dom.progress.classList.add('assetup--isHidden')
+			// TODO: POssibly remove when upload progress reworked.
+			dom.overlay.classList.add('assetup--isHidden')
 		};
 
 		var checkLimit = function() {
@@ -139,7 +144,10 @@ var AssetUp = (function () {
 		var updatePreviewProgress = function (i, percent) {
 			processing.previews[i] = percent;
 			var totalProcessed = processing.previews.filter(function(percent) { return percent === 100; });
-			dom.progress.textContent = 'Processing ' + (totalProcessed + 1) + ' of ' + processing.previews.length;
+			dom.progress.textContent = 'Processing ' + (totalProcessed.length + 1) + ' of ' + processing.previews.length;
+			if(totalProcessed.length == processing.previews.length) {
+				stoppedProcessingUploads();
+			}
 		}
 
 
@@ -181,17 +189,14 @@ var AssetUp = (function () {
 
 		var removeAssetHandler = function (event) {
 
-			if (!event.target.classList.contains('assetup--remove')) {
+	        var asset = event.target.closest('.assetup--asset');
+			if (!asset) {
 				return;
         	}
         	event.preventDefault();
         	event.stopPropagation();
 
-	        var asset = event.target.closest('.assetup--asset');
-	        if (asset) {
-        		api.removeAsset(asset);
-	        }
-
+        	api.removeAsset(asset);
 		};
 
 		var uploadAssetHandler = function (event) {
@@ -387,6 +392,7 @@ var AssetUp = (function () {
 			dom.input = dom.uploader.querySelector('[name="assetUpAssetInput"]');
 			dom.errors = dom.uploader.querySelector('.assetup--errors');
 			dom.progress = dom.uploader.querySelector('.assetup--progress');
+			dom.overlay = dom.uploader.querySelector('.assetup--overlay'); // TODO: POssibly remove when upload progress reworked.
 			dom.uploadPercent = dom.progress.querySelector('.assetup--uploadPercent');
 
 			// Reorder

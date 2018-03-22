@@ -87,6 +87,7 @@ class Uploader extends Model
 
     // Css
     public $customClass;
+    public $themeColour = '#000000';
 
     // Language
     public $selectText;
@@ -130,6 +131,8 @@ class Uploader extends Model
         $view = Craft::$app->getView();
         $view->registerAssetBundle(AssetUpAssetBundle::class);
         $view->registerJs('new AssetUp('.$this->_getJavascriptVariables().');', View::POS_END);
+
+        $view->registerCss($this->_getCustomCss());
 
         return AssetUpHelper::renderTemplate('assetup/uploader', [
             'uploader' => $this
@@ -219,6 +222,17 @@ class Uploader extends Model
         }
 
         return $encode ? JsonHelper::encode($settings) : $settings;
+    }
+
+    private function _getCustomCss()
+    {
+      $css = '
+        .assetup--isLoading:after { border-color: '.$this->themeColour.'; }
+        .assetup--label { background-color: '.$this->themeColour.'; }
+        .assetup--btn { color: '.$this->themeColour.'; }
+      ';
+
+      return $css;
     }
 
 
