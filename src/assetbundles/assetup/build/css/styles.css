@@ -25,11 +25,9 @@
     display: block;
 }
 
-
-.assetup--asset:hover {
+.assetup--reorderEnabled .assetup--asset:hover {
     cursor: all-scroll;
 }
-
 
 .assetup--asset-background {}
 .assetup--asset-image {}

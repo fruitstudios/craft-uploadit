@@ -13,6 +13,7 @@ use craft\base\VolumeInterface;
 use craft\base\Model;
 use craft\models\VolumeFolder;
 use craft\helpers\Json as JsonHelper;
+use craft\helpers\Assets as AssetsHelper;
 
 class Uploader extends Model
 {
@@ -31,7 +32,10 @@ class Uploader extends Model
     private $_element;
     private $_folder;
 
+    private $_defaultAllowedfileKinds;
+    private $_defaultMaxUploadFileSize;
     private $_defaultJavascriptVariables;
+
     private $_javascriptProperties = [
         'id',
         'name',
@@ -49,12 +53,10 @@ class Uploader extends Model
     // Public
     // =========================================================================
 
+    // ID
     public $id;
 
-    /**
-     * @var string|null Name
-     * Input name for this uploader, if null standalone uploader setup
-     */
+    // Name - name | null
     public $name;
 
     // Assets - Asset[] | null
@@ -100,35 +102,35 @@ class Uploader extends Model
     // Public Methods
     // =========================================================================
 
-    public function __construct(array $attributes = null)
+    public function __construct(array $attributes = [])
     {
-        $this->id = uniqid('assetup');
-        $this->selectText = Craft::t('assetup', 'Select files');
-        $this->dropText = Craft::t('assetup', 'drop files here');
-
-        if($attributes)
-        {
-            $this->setAttributes($attributes, false);
-        }
-
+        // Defualts
         $this->_defaultJavascriptVariables = [
             'csrfTokenName' => Craft::$app->getConfig()->getGeneral()->csrfTokenName,
             'csrfTokenValue' => Craft::$app->getRequest()->getCsrfToken(),
         ];
+        $this->_defaultAllowedfileKinds = AssetsHelper::getFileKinds();
+        $this->_defaultMaxUploadFileSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
 
-        $this->validate();
+
+        // Settings
+        $this->id = uniqid('assetup');
+        $this->selectText = Craft::t('assetup', 'Select files');
+        $this->dropText = Craft::t('assetup', 'drop files here');
+        $this->maxSize = $this->_defaultMaxUploadFileSize;
+        $this->acceptedFileTypes = $this->_defaultAllowedfileKinds;
+
+        $this->setAttributes($attributes, false);
     }
 
     public function render()
     {
-        $view = Craft::$app->getView();
-
         $this->validate();
 
+        $view = Craft::$app->getView();
         $view->registerAssetBundle(AssetUpAssetBundle::class);
         $view->registerJs('new AssetUp('.$this->_getJavascriptVariables().');', View::POS_END);
 
-        // $this->preRender(); // TODO SET THE LIMIT ETC ETC PRE RENDER
         return AssetUpHelper::renderTemplate('assetup/uploader', [
             'uploader' => $this
         ]);
@@ -138,11 +140,89 @@ class Uploader extends Model
     {
         $rules = parent::rules();
         $rules[] = [['id'], 'required'];
-        $rules[] = [['target'], 'validateTarget'];
+        $rules[] = [['target'], 'required', 'message' => Craft::t('assetup', 'A valid target field, volume or folder must be defined.')];
+        $rules[] = [['maxSize'], 'integer', 'max' => $this->_defaultMaxUploadFileSize, 'message' => Craft::t('assetup', 'Max file cant be greater than the global setting maxUploadFileSize')];
         return $rules;
     }
 
-    public function validateTarget()
+    public function beforeValidate()
+    {
+        if($this->_validFieldTarget())
+        {
+            $this->_setTarget(self::TARGET_FIELD);
+        }
+        elseif($this->_validFolderTarget())
+        {
+            $this->_setTarget(self::TARGET_FOLDER);
+        }
+
+        return parent::beforeValidate();
+    }
+
+    public function afterValidate()
+    {
+        $target = $this->getTarget();
+        switch ($target['type'])
+        {
+            case self::TARGET_FIELD:
+
+                $this->limit = $this->_field->limit ? $this->_field->limit : null;
+                $this->acceptedFileTypes = $this->_field->allowedKinds;
+
+                break;
+
+            case self::TARGET_FOLDER:
+
+                break;
+        }
+
+        if(!$this->name)
+        {
+            $this->enableReorder = false;
+            $this->enableRemove = false;
+        }
+
+        return parent::afterValidate();
+    }
+
+    public function getTarget()
+    {
+        return $this->_target;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    private function _setTarget($type)
+    {
+        $target = [ 'type' => $type ];
+        switch ($type)
+        {
+            case self::TARGET_FIELD:
+                $target['fieldId'] = $this->_field->id ?? null;
+                $target['elementId'] = $this->_element->id ?? null;
+                break;
+
+            case self::TARGET_FOLDER:
+                $target['folderId'] = $this->_folder->id ?? null;
+                break;
+        }
+        $this->_target = $target;
+    }
+
+    private function _getJavascriptVariables(bool $encode = true)
+    {
+        $settings = $this->_defaultJavascriptVariables;
+        foreach ($this->_javascriptProperties as $property)
+        {
+            $settings[$property] = $this->$property;
+        }
+
+        return $encode ? JsonHelper::encode($settings) : $settings;
+    }
+
+
+    private function _validFieldTarget()
     {
         // Field set as target
         if($this->field)
@@ -187,10 +267,13 @@ class Uploader extends Model
 
             // Store the field
             $this->_field = $field;
-            $this->_setTarget(self::TARGET_FIELD);
             return true;
         }
+        return false;
+    }
 
+    private function _validFolderTarget()
+    {
         // Volume and / or folder set as target
         if($this->volume || $this->folder)
         {
@@ -198,7 +281,6 @@ class Uploader extends Model
             if($this->folder instanceof VolumeFolder)
             {
                 $this->_folder = $this->folder;
-                $this->_setTarget(self::TARGET_FOLDER);
                 return true;
             }
 
@@ -216,7 +298,6 @@ class Uploader extends Model
 
                 // We have a folder
                 $this->_folder = $this->folder;
-                $this->_setTarget(self::TARGET_FOLDER);
                 return true;
             }
 
@@ -254,7 +335,6 @@ class Uploader extends Model
 
                 // We have a folder
                 $this->_folder = $this->folder;
-                $this->_setTarget(self::TARGET_FOLDER);
                 return true;
             }
             else
@@ -270,51 +350,10 @@ class Uploader extends Model
 
                 // We have a folder
                 $this->_folder = $folder;
-                $this->_setTarget(self::TARGET_FOLDER);
                 return true;
             }
         }
-
-        $this->addError('target', Craft::t('assetup', 'A valid target field, volume or folder must be defined.'));
         return false;
+
     }
-
-    public function getTarget()
-    {
-        return $this->_target ?? false;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    private function _setTarget($type)
-    {
-        $target = [ 'type' => $type ];
-        switch ($type)
-        {
-            case self::TARGET_FIELD:
-                $target['fieldId'] = $this->_field->id ?? null;
-                $target['elementId'] = $this->_element->id ?? null;
-                break;
-
-            case self::TARGET_FOLDER:
-                $target['folderId'] = $this->_folder->id ?? null;
-                break;
-        }
-        $this->_target = $target;
-    }
-
-    // Return JSON array
-    // Which settings are we sending over to craft
-    private function _getJavascriptVariables(bool $encode = true)
-    {
-        $settings = $this->_defaultJavascriptVariables;
-        foreach ($this->_javascriptProperties as $property)
-        {
-            $settings[$property] = $this->$property;
-        }
-
-        return $encode ? JsonHelper::encode($settings) : $settings;
-    }
-
 }

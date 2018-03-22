@@ -4,7 +4,14 @@
 
 {% if uploader and not uploader.hasErrors() %}
 
-    <div id="{{ uploader.id }}" class="assetup--uploader assetup--layout-{{ uploader.layout }}{{ uploader.customClass ? ' '~uploader.customClass }}">
+    {% set classes = [
+        'assetup--uploader',
+        'assetup--layout-' ~ uploader.layout,
+        uploader.enableReorder ? 'assetup--reorderEnabled' : null,
+        uploader.customClass ? uploader.customClass : null,
+    ]|filter|join(' ') %}
+
+    <div id="{{ uploader.id }}" class="{{ classes }}">
 
         {% if uploader.name %}
             <input type="hidden" name="{{ uploader.name|replace({'[]': ''}) }}" value="" />
@@ -48,7 +55,7 @@
         <div class="assetup--errors assetup--isHidden"></div>
 
         <div class="assetup--progress assetup--isHidden">
-            Uploading... 45%
+            {{ 'Uploading...'|t('assetup') }} <span class="assetup--uploadPercent">0</span>%
         </div>
 
     </div>
@@ -57,14 +64,14 @@
 
     <div class="assetup--notice">
         {% if uploader.hasErrors() %}
-            <p>Uploader Not Ready</p>
+            <p>{{ 'Uploader Not Ready'|t('assetup') }}</p>
             <ul class="assetup--noticeErrors">
                 {% for error in uploader.getErrors() %}
                     <li>{{ error|filter|join(', ') }}</li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p>Uploader Not Found</p>
+            <p>{{ 'Uploader Not Found'|t('assetup') }}</p>
         {% endif %}
     </div>
 
