@@ -23,7 +23,7 @@ class AssetUpAssetBundle extends AssetBundle
             'js/vendor/ready.js',
             'js/vendor/Sortable.js',
             'js/vendor/extend.js',
-            'js/vendor/atomic.js',
+            'js/vendor/imagesloaded.js',
             'js/AssetUp.js',
         ];
 

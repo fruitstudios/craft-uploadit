@@ -1,18 +1,45 @@
+var assetups = {};
+
 var AssetUp = (function () {
 	'use strict';
 
 	var defaults = {
 		sortable: {
 			animation: 150,
-			handle: ".assetup--handle",
+			// handle: ".assetup--handle",
 			draggable: ".assetup--asset",
-		}
+			dragClass: "assetup--asset-dragging",
+			ghostClass: "assetup--asset-ghost",
+			chosenClass: "assetup--asset-chosen",
+			filter: ".assetup--controls, .assetup--remove",
+			// filter: ".assetup--remove, .assetup--controls",
+			onFilter: function (event) {
+				// event.item.click();
+				// api.removeAsset(event.item);
+				// evt.item.parentNode.removeChild(evt.item);
+			}
+		},
+		layout: 'grid',
+		preview: 'image',
+		csrfTokenName: '',
+		csrfTokenValue: '',
+		name: false,
+		transform: '',
+		enableReorder: true,
+		enableRemove: true,
+		target: false
 	};
-	var uploader;
-	var assets;
-	var controls;
-	var input;
-	var errors;
+
+	var dom = {
+		uploader: null,
+		assets: null,
+		controls: null,
+		input: null,
+		errors: null,
+		progress: null,
+		overlay: null, // TODO: Possibly remove when upload progress reworked.
+		uploadPercent: null,
+	};
 
 	var constructor = function (options) {
 
@@ -25,40 +52,103 @@ var AssetUp = (function () {
 	    // =========================================================================
 
 		var settings;
+		var processing;
 
 	    // Private Methods
 	    // =========================================================================
 
 	    var initDropToUpload = function() {
 	    	if(settings.enableDropToUpload) {
-				uploader.addEventListener('dragover', dropToUploadHandler, false);
-				uploader.addEventListener('dragleave', dropToUploadHandler, false);
-				uploader.addEventListener('drop', dropToUploadHandler, false);
+	    		['dragover', 'dragenter', 'dragleave', 'drop'].forEach(name => {
+					dom.uploader.addEventListener(name, dropToUploadHandler, false);
+				});
 	    	}
 	    }
 
 	   	var initReorderAssets = function() {
 	    	if(settings.enableReorder) {
-	    		Sortable.create(assets, settings.sortable);
+	    		Sortable.create(dom.assets, settings.sortable);
 	    	}
 	    }
 
 	    var initRemoveAssets = function() {
 	    	if(settings.enableRemove) {
-				uploader.addEventListener('click', removeAssetHandler, false);
+				dom.uploader.addEventListener('click', removeAssetHandler, false);
 	    	}
 	    }
 
-		var setElementLoading = function (element, loading) {
-			element = element || false;
-			loading = typeof(loading) === 'boolean' ? loading : true;
-
-			if(loading) {
-				element.classList.add('assetup--isLoading')
-			} else {
-				element.classList.remove('assetup--isLoading')
+		var objToParams = function (obj) {
+			if (typeof (obj) === 'string') return obj;
+			var encoded = [];
+			for (var prop in obj) {
+				if (obj.hasOwnProperty(prop)) {
+					encoded.push(encodeURIComponent(prop) + '=' + encodeURIComponent(obj[prop]));
+				}
 			}
+			return encoded.join('&');
 		};
+
+		var htmlAsElement = function(html) {
+			var span = document.createElement('span');
+			span.innerHTML = html.trim();
+			return span.firstChild;
+		}
+
+		var startProcessingUploads = function () {
+			dom.uploader.classList.add('assetup--isLoading')
+			dom.progress.classList.remove('assetup--isHidden')
+			// TODO: POssibly remove when upload progress reworked.
+			dom.overlay.classList.remove('assetup--isHidden')
+		};
+
+		var stoppedProcessingUploads = function () {
+			dom.uploader.classList.remove('assetup--isLoading')
+			dom.progress.classList.add('assetup--isHidden')
+			// TODO: POssibly remove when upload progress reworked.
+			dom.overlay.classList.add('assetup--isHidden')
+		};
+
+		var checkLimit = function() {
+			var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
+			if(settings.limit && numberOfUploadedAssets >= settings.limit) {
+				dom.controls.classList.add('assetup--isHidden');
+			} else {
+				dom.controls.classList.remove('assetup--isHidden');
+			}
+		}
+
+		// https://www.smashingmagazine.com/2018/01/drag-drop-file-uploader-vanilla-js/
+
+		var initializeUploadProgress = function (numberOfAssets) {
+			startProcessingUploads();
+			dom.uploadPercent.textContent = '0';
+			processing = {
+				uploads: [],
+				previews: []
+			};
+			for(let i = numberOfAssets; i > 0; i--) {
+				processing.uploads.push(0);
+				processing.previews.push(0);
+			}
+		}
+
+		var updateUploadProgress = function (i, percent) {
+			processing.uploads[i] = percent;
+			var total = processing.uploads.reduce((total, current) => total + current, 0) / processing.uploads.length;
+			dom.uploadPercent.textContent = total;
+			if(total == 100) {
+				dom.progress.textContent = 'Processing Uploads...';
+			}
+		}
+
+		var updatePreviewProgress = function (i, percent) {
+			processing.previews[i] = percent;
+			var totalProcessed = processing.previews.filter(function(percent) { return percent === 100; });
+			dom.progress.textContent = 'Processing ' + (totalProcessed.length + 1) + ' of ' + processing.previews.length;
+			if(totalProcessed.length == processing.previews.length) {
+				stoppedProcessingUploads();
+			}
+		}
 
 
 	    // Event Handlers
@@ -75,6 +165,7 @@ var AssetUp = (function () {
 
 			switch (event.type) {
 
+				case 'dragenter':
 				case 'dragover':
 					upload.classList.add('assetup--isDragging');
 					break;
@@ -84,8 +175,13 @@ var AssetUp = (function () {
 					break;
 
 				case 'drop':
-					api.log('Handle Drop Here');
 					upload.classList.remove('assetup--isDragging');
+	                var assets = event.dataTransfer.files;
+	                if(!assets) {
+	                	api.setError('Drop Error');
+	                	return;
+	                }
+	                api.uploadAssets(assets)
 					break;
 			}
 
@@ -93,16 +189,14 @@ var AssetUp = (function () {
 
 		var removeAssetHandler = function (event) {
 
-			if (!event.target.classList.contains('assetup--remove')) {
+	        var asset = event.target.closest('.assetup--asset');
+			if (!asset) {
 				return;
         	}
         	event.preventDefault();
+        	event.stopPropagation();
 
-	        var asset = event.target.closest('.assetup--asset');
-	        if (asset) {
-        		api.removeAsset(asset);
-	        }
-
+        	api.removeAsset(asset);
 		};
 
 		var uploadAssetHandler = function (event) {
@@ -111,135 +205,177 @@ var AssetUp = (function () {
 				return;
         	}
         	event.preventDefault();
-        	input.click();
+        	dom.input.click();
 		};
 
 		var assetInputHandler = function (event) {
 
 			if (!event.target.closest('[name="assetUpAssetInput"]')) {
-				api.log('not found');
 				return;
         	}
         	event.preventDefault();
-
-        	api.log(input.files);
-
-        	api.uploadAssets();
+        	api.uploadAssets(dom.input.files);
 		};
 
 	    // Public Methods
 	    // =========================================================================
 
-	    api.log = function (value) {
-			console.log('[AssetUp][#'+settings.id+']', value, Array.prototype.slice.call(arguments));
+	    api.log = function (key, data) {
+			console.log('[AssetUp][#'+settings.id+']['+key+']', data);
 		};
+
+		api.getNumberOfUploadedAssets = function () {
+			return (dom.assets.childElementCount - 1);
+		}
 
 		api.setError = function (error) {
 			error = error || false;
 			if(error) {
-				errors.textContent = error;
-				errors.classList.remove('assetup--isHidden');
+				dom.errors.textContent = error;
+				dom.errors.classList.remove('assetup--isHidden');
 			} else {
-				errors.textContent = '';
-				errors.classList.add('assetup--isHidden');
+				dom.errors.textContent = '';
+				dom.errors.classList.add('assetup--isHidden');
 			}
 		};
 
-	    api.uploadAssets = function (assets) {
-			assets = assets || 'NONE SET';
-			api.log('Upload Assets And Return Error / Success Here');
-			api.log(assets);
+		api.uploadAssets = function (assets) {
 
-			setElementLoading(uploader, true);
+			assets = assets || false;
+			if(!assets) {
+				return;
+			}
 
+			// Check Limit
+			if(settings.limit) {
+				var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
+				var leftOfLimit = settings.limit - numberOfUploadedAssets;
+				if(assets.length > leftOfLimit)
+				{
+					api.setError('You can only upload another ' + leftOfLimit + ' assets');
+					return;
+				}
+			}
+
+	        assets = [...assets];
+	        initializeUploadProgress(assets.length);
+	        assets.forEach(api.uploadAsset);
+		}
+
+	    api.uploadAsset = function (asset, i) {
+
+
+	    	// TODO: Some Validation
+
+	    	//         var allowedFileTypes = FINDARACEGLOBAL.ASSETS.allowedFileTypes,
+	    	//         maxUpload = FINDARACEGLOBAL.ASSETS.maxUpload,
+	    	//         maxUploadMB = (maxUpload / (1024*1024)).toFixed(0);
+
+	    	//         if(asset.size > maxUpload)
+	    	//         {
+	    	//             FINDARACE.forms.addFieldError($field, 'File size cannot exceed ' + maxUploadMB + 'MB');
+	    	//             $assetUploadHolder.removeClass('is-loading');
+	    	//             return false;
+	    	//         }
+
+
+
+			var xhr = new XMLHttpRequest();
+			var formData = new FormData();
+			formData.append('action', 'assets/save-asset');
+			formData.append('assets-upload', asset);
+			switch(settings.target.type) {
+				case('field'):
+					formData.append('elementId', settings.target.elementId);
+					formData.append('fieldId', settings.target.fieldId);
+					break;
+				case('folder'):
+					formData.append('folderId', settings.target.folderId);
+					break;
+			}
+			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
+
+			// Update progress
+			xhr.upload.onprogress = function(event) {
+				updateUploadProgress(i, Math.round(event.loaded / event.total * 100));
+			};
+
+			xhr.open('POST', '/', true);
+			xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+			xhr.setRequestHeader('Accept', 'application/json');
+			// xhr.setRequestHeader('Content-type', asset.type);
+
+			// Setup our listener to process compeleted requests
+			xhr.onreadystatechange = function () {
+
+				if (xhr.readyState !== 4) return;
+
+				if (xhr.status === 200) {
+
+					api.setAssetPreview(xhr.response.assetId, i);
+
+				} else {
+					// TODO: Error Message
+					console.log('The request failed!');
+				}
+
+			};
+
+			xhr.responseType = 'json';
+			xhr.send(formData);
+		};
+
+		api.setAssetPreview = function (id, i) {
+
+			updatePreviewProgress(i, 0);
+
+			// See: https://gist.github.com/sgnl/bd760187214681cdb6dd
+			var xhr = new XMLHttpRequest();
 			var data = {
-				action: 'assetup/upload',
-				[settings.csrfTokenName]: settings.csrfTokenValue
-			}
+				action: 'assetup/upload/asset-preview',
+				[settings.csrfTokenName]: settings.csrfTokenValue,
+				assetId: id,
+				name: settings.name,
+				preview: settings.preview,
+				transform: settings.transform,
+				enableReorder: settings.enableReorder,
+				enableRemove: settings.enableRemove,
+			};
 
+			xhr.open('POST', '/', true);
+			xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+			xhr.setRequestHeader('Accept', 'application/json');
+			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
+			xhr.onreadystatechange = function () {
 
-			atomic.ajax({
-			    type: 'POST',
-			    url: '/',
-			    data: data,
-			    responseType: 'json',
-			    headers: {
-			        'Accept': 'application/json',
-			        'X-Requested-With': 'XMLHttpRequest'
-			    }
-			})
-			.success(function (data, xhr) {
-				api.log('SUCCESS');
-			    api.log(data);
-			    api.log(xhr);
-			})
-			.error(function (data, xhr) {
-				api.log('ERROR');
-			    api.log(data);
-			    api.log(xhr);
-			})
-			.always(function (data, xhr) {
-				api.log('ALWAYS');
-			    api.log(data);
-			    api.log(xhr);
-			    setElementLoading(uploader, false);
-			});
+				if (xhr.readyState !== 4) return;
 
-		 //    atomic.ajax({
-		 //    	type: 'POST',
-		 //        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-		 //    	url: '/',
-		 //    	data: app.helpers.prepAjaxRequestData(data)
-		 //    })
-			// .success(function (data, xhr) {
+				if (xhr.status === 200) {
 
-		 //        app.spinner.stop(toggle);
+					var preview = htmlAsElement(xhr.response.html);
 
-		 //        if(data.success)
-		 //        {
-		 //            document.body.innerHTML += data.html;
+	                imagesLoaded(preview, function() {
+						dom.controls.before(preview); // TODO: Some transition here, fade images in
+						updatePreviewProgress(i, 100);
+						checkLimit();
+	                });
 
-		 //            var elem = document.querySelector(modalId);
-		 //            if(elem) {
-		 //                app.spinner.start(elem, { color: '#333' });
-		 //                modals.openModal(toggle, modalId);
+				} else {
+					// TODO: Set Errors
+					console.log('Could not get preview!');
+				}
+			};
 
-		 //                var imageLoader = imagesLoaded(elem, function() {
-		 //                    app.slider.init(elem);
-		 //                    app.spinner.stop(elem);
-		 //                });
-
-		 //                imageLoader.on( 'progress', function( instance, image ) {
-		 //                    var result = image.isLoaded ? 'loaded' : 'broken';
-		 //                    console.api.log( 'image is ' + result + ' for ' + image.img.src );
-		 //                });
-		 //            }
-		 //        }
-		 //        else
-		 //        {
-		 //            console.api.log('[MODALS] Could Not Load Modal', modalId);
-		 //            // $.flash({
-		 //            //     class: 'error',
-		 //            //     message: 'request failed',
-		 //            //     position: 'top'
-		 //            // });
-		 //        }
-
-			// })
-			// .error(function () {
-		 //        // $.flash({
-		 //        //     class: 'error',
-		 //        //     message: 'request failed',
-		 //        //     position: 'top'
-		 //        // });
-			// });
-		};
+  			xhr.responseType = 'json';
+			xhr.send(objToParams(data));
+		}
 
 		api.removeAsset = function (asset) {
 			asset = asset || null;
 			if(asset) {
 				asset.remove();
+				checkLimit();
 			}
 		}
 
@@ -247,23 +383,29 @@ var AssetUp = (function () {
 
 			// Prep Settings
 			settings = extend(defaults, options || {});
-			api.log(settings);
+			api.log('init()', settings);
 
 			// Elements
-			uploader = document.getElementById(settings.id);
-			assets = uploader.querySelector('.assetup--assets');
-			controls = uploader.querySelector('.assetup--controls');
-			input = uploader.querySelector('[name="assetUpAssetInput"]');
-			errors = uploader.querySelector('.assetup--errors');
+			dom.uploader = document.getElementById(settings.id);
+			dom.assets = dom.uploader.querySelector('.assetup--assets');
+			dom.controls = dom.uploader.querySelector('.assetup--controls');
+			dom.input = dom.uploader.querySelector('[name="assetUpAssetInput"]');
+			dom.errors = dom.uploader.querySelector('.assetup--errors');
+			dom.progress = dom.uploader.querySelector('.assetup--progress');
+			dom.overlay = dom.uploader.querySelector('.assetup--overlay'); // TODO: POssibly remove when upload progress reworked.
+			dom.uploadPercent = dom.progress.querySelector('.assetup--uploadPercent');
 
 			// Reorder
 			initReorderAssets();
 			initDropToUpload();
 			initRemoveAssets();
 
+			// Checks
+			checkLimit();
+
 			// Input
-			uploader.addEventListener('change', assetInputHandler, false);
-			uploader.addEventListener('click', uploadAssetHandler, false);
+			dom.uploader.addEventListener('change', assetInputHandler, false);
+			dom.uploader.addEventListener('click', uploadAssetHandler, false);
 
 		};
 
@@ -275,285 +417,6 @@ var AssetUp = (function () {
 
 })();
 
-// (function ( FINDARACE ) {
-//     "use strict";
+// ready(function () {
 
-//     // TODO: *** This works but does not handle errors well.
-//     //     : It would be best to handle this in one hit, needs reworking.
-//     var allowMultipleUploads = false;
-
-//     var init = function () {
-
-//         FINDARACE.DOM.$body.on('click', '.js-assetUpload', function(event) {
-//             event.preventDefault();
-//             var $trigger = $(this);
-//             $trigger.next('input[name="assetFileInput"]').trigger('click');
-//         });
-
-//         FINDARACE.DOM.$body.on('change', 'input[name="assetFileInput"]', saveAssets);
-
-//         FINDARACE.DOM.$body.on('click', '.js-assetFieldDelete', deleteAsset);
-
-//         initAssetFields();
-//         initAssetDrop();
-//     };
-
-//     var initAssetFields = function(context) {
-
-//         var assetFields = context ? context.querySelectorAll('.js-assetFieldAssets') : document.querySelectorAll('.js-assetFieldAssets');
-
-//         assetFields.forEach(function (assetFieldAssets, index) {
-
-//             var sortable = new Sortable(assetFieldAssets, {
-//     	        handle: ".js-assetFieldReOrderHandle",
-//                 filter: ".hidden",
-//             });
-//         });
-
-//     };
-
-//     var initAssetDrop = function() {
-
-//         FINDARACE.DOM.$body.on('dragover', '.js-assetUpload', function(event) {
-//             event.preventDefault();
-//             event.stopPropagation();
-//             $(this).addClass('is-dragging');
-//         });
-
-//         FINDARACE.DOM.$body.on('dragleave', '.js-assetUpload', function(event) {
-//             event.preventDefault();
-//             event.stopPropagation();
-//             $(this).removeClass('is-dragging');
-//         });
-
-//         FINDARACE.DOM.$body.on('drop', '.js-assetUpload', function(event) {
-//             event.preventDefault();
-//             event.stopPropagation();
-//             var droppedFiles = event.originalEvent.dataTransfer.files,
-//                 $fileInput = $(this).closest('.js-assetUploadHolder').find('input[name=assetFileInput]');
-
-//             if(allowMultipleUploads) {
-
-//                 if(droppedFiles.length >= 0)
-//                 {
-//                     for (var i = 0; i < droppedFiles.length; i++) {
-//                         saveAsset(event, $fileInput, droppedFiles[i]);
-//                     }
-//                 }
-//                 else
-//                 {
-//                     $.flash({
-//                         class: 'error',
-//                         message: 'Sorry, doesn\'t look like you have added any files.',
-//                         position: 'top'
-//                     });
-//                 }
-
-//             } else {
-
-//                 if(droppedFiles.length === 1)
-//                 {
-//                     saveAsset(event, $fileInput, droppedFiles[0]);
-//                 }
-//                 else
-//                 {
-//                     $.flash({
-//                         class: 'error',
-//                         message: 'Sorry, you can\'t upload multiple files',
-//                         position: 'top'
-//                     });
-//                 }
-
-//             }
-
-//             $(this).removeClass('is-dragging');
-//         });
-
-//     };
-
-
-
-//     var saveAssets = function(event) {
-
-//         event.preventDefault();
-
-//         var $fileInput = $(this);
-
-//         if(allowMultipleUploads) {
-
-//             if($fileInput[0].files.length >= 0)
-//             {
-//                 for (var i = 0; i < $fileInput[0].files.length; i++) {
-//                     // TODO: SEE ABOVE ***
-//                     saveAsset(event, $fileInput, $fileInput[0].files[i]);
-//                 }
-//             }
-//             else
-//             {
-//                 $.flash({
-//                     class: 'error',
-//                     message: 'Sorry, doesn\'t look like you have added any files.',
-//                     position: 'top'
-//                 });
-//             }
-
-//         } else {
-
-//             if($fileInput[0].files.length === 1)
-//             {
-//                 saveAsset(event, $fileInput, $fileInput[0].files[0]);
-//             }
-//             else
-//             {
-//                 $.flash({
-//                     class: 'error',
-//                     message: 'Sorry, you can\'t upload multiple files',
-//                     position: 'top'
-//                 });
-//             }
-
-//         }
-
-//     };
-
-//     var saveAsset = function(event, $fileInput, asset) {
-
-//         asset = asset ? asset : $fileInput[0].files[0];
-
-//         var $field = $fileInput.closest('.js-field'),
-//         $assetField = $fileInput.closest('.js-assetField'),
-//         $assetUploadHolder = $assetField.find('.js-assetUploadHolder'),
-//         $assetFieldAssets = $assetField.find('.js-assetFieldAssets'),
-//         $assetFieldPreviewTemplate = $assetField.find('.js-assetFieldPreviewTemplate'),
-//         name = $.dataOrDefault($assetField, 'name', '');
-
-//         FINDARACE.forms.clearFieldError($field);
-//         $assetUploadHolder.addClass('is-loading');
-
-//         var data = new FormData();
-//         data.append('action', 'findarace/assets/saveAsset');
-//         data.append('asset', asset);
-//         data.append('folder', $fileInput.data('folder'));
-//         data.append('fieldId', $fileInput.data('field-id'));
-//         data.append('source', $fileInput.data('source'));
-//         data.append('elementId', $fileInput.data('element-id'));
-//         data.append('transform', $fileInput.data('transform'));
-//         data.append(FINDARACEGLOBAL.CSRF.tokenName, FINDARACEGLOBAL.CSRF.token);
-
-//         // Pre Upload Checks
-//         var allowedFileTypes = FINDARACEGLOBAL.ASSETS.allowedFileTypes,
-//         maxUpload = FINDARACEGLOBAL.ASSETS.maxUpload,
-//         maxUploadMB = (maxUpload / (1024*1024)).toFixed(0);
-
-//         if(asset.size > maxUpload)
-//         {
-//             FINDARACE.forms.addFieldError($field, 'File size cannot exceed ' + maxUploadMB + 'MB');
-//             $assetUploadHolder.removeClass('is-loading');
-//             return false;
-//         }
-
-//         $.ajax({
-//             method: 'POST',
-//             url: '/',
-//             data: data,
-//             cache: false,
-//             dataType: 'json',
-//             processData: false,
-//             contentType: false
-//         })
-//         .done( function(response) {
-
-//             if (response.success) {
-
-//                 var $newAssetFieldPreviewFromTemplate = $assetFieldPreviewTemplate.clone();
-//                 $newAssetFieldPreviewFromTemplate.append('<input type="hidden" name="' + name + '" value="' + response.asset.id + '" />');
-
-//                 var $thisAssetFieldPreview = $newAssetFieldPreviewFromTemplate.insertBefore($assetFieldPreviewTemplate),
-//                     $thisAssetPreview = $thisAssetFieldPreview.find('.js-assetPreview');
-
-//                 $thisAssetFieldPreview.toggleClass('js-assetFieldPreviewTemplate js-assetFieldPreview');
-
-//                 var preLoaded = false;
-//                 switch ($thisAssetPreview.data('view')) {
-
-//                     case 'background':
-//                         preLoadImage(response.asset.url, function() {
-
-//                             $thisAssetPreview.css({ backgroundImage: 'url(' + response.asset.url + ')' });
-
-//                             $assetUploadHolder.removeClass('is-loading');
-//                             $thisAssetFieldPreview.removeClass('is-hidden');
-
-//                         });
-//                         break;
-
-//                     case 'image':
-//                         preLoadImage(response.asset.url, function() {
-
-//                             $thisAssetPreview.find('img').attr('src', response.asset.url);
-
-//                             $assetUploadHolder.removeClass('is-loading');
-//                             $thisAssetFieldPreview.removeClass('is-hidden');
-
-//                         });
-//                         break;
-
-//                     case 'file':
-
-//                         $thisAssetPreview.find('.js-assetFilename').text(response.asset.filename);
-
-//                         $assetUploadHolder.removeClass('is-loading');
-//                         $thisAssetFieldPreview.removeClass('is-hidden');
-
-//                         break;
-//                 }
-
-//                 var limit = $.dataOrDefault($assetField, 'limit', false);
-//                 if(limit && $assetField.find('.js-assetFieldPreview').length >= limit) {
-//                     $assetField.find('.js-assetUploadHolder').addClass('is-hidden');
-//                 }
-
-//             } else {
-
-//                 $assetUploadHolder.removeClass('is-loading');
-
-//                 if(response.error)
-//                 {
-//                     FINDARACE.forms.addFieldError($field, response.error);
-//                 }
-//                 else
-//                 {
-//                     $.flash({
-//                         class: 'error',
-//                         message: response.message ? response.message : 'Upload Failed',
-//                         position: 'top',
-//                         duration: 2500
-//                     });
-//                 }
-//             }
-
-//             $fileInput.val('');
-//             return response.success;
-
-//         });
-
-//     };
-
-//     var preLoadImage = function(url, success, error) {
-//         var $img = $('<img style="display:none !important;">');
-//         $img.attr('src', url);
-//         $img.appendTo('body');
-//         $img.on('load', function(){
-//             $img.remove();
-//             success();
-//         }).on('error', function(){
-//             $img.remove();
-//             error();
-//         });
-//     };
-
-//     FINDARACE.assets = {
-//         init: init,
-//         preLoadImage: preLoadImage,
-//     };
-// })( window.FINDARACE );
+// });
