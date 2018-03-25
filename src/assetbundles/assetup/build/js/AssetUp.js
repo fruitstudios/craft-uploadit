@@ -282,7 +282,8 @@ var AssetUp = (function () {
 
 			var xhr = new XMLHttpRequest();
 			var formData = new FormData();
-			formData.append('action', 'assets/save-asset');
+			// formData.append('action', 'assets/save-asset');
+			formData.append('action', 'assetup/upload/upload');
 			formData.append('assets-upload', asset);
 			switch(settings.target.type) {
 				case('field'):

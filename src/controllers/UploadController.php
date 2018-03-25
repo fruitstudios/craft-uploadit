@@ -6,16 +6,31 @@ use fruitstudios\assetup\helpers\AssetUpHelper;
 
 use Craft;
 use craft\web\Controller;
+use craft\controllers\AssetsController;
 
 class UploadController extends Controller
 {
     // Protected Properties
     // =========================================================================
 
-    protected $allowAnonymous = ['asset-preview'];
+    protected $allowAnonymous = ['asset-preview', 'upload'];
 
     // Public Methods
     // =========================================================================
+
+    public function actionUpload()
+    {
+        // AssetsController - actionSaveAsset()
+        $response = Craft::$app->runAction('assets/save-asset');
+
+        // Handle response
+
+        // Do any other cool stuff, add any errors etc etc
+
+        // Return
+        return $this->asJson($response->data);
+    }
+
 
     public function actionAssetPreview()
     {
