@@ -22,6 +22,7 @@ class AssetUpAssetBundle extends AssetBundle
             'js/vendor/polyfill.js',
             'js/vendor/ready.js',
             'js/vendor/Sortable.js',
+            'js/vendor/render.js',
             'js/vendor/extend.js',
             'js/vendor/imagesloaded.js',
             'js/AssetUp.js',
