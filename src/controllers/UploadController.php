@@ -13,12 +13,12 @@ class UploadController extends Controller
     // Protected Properties
     // =========================================================================
 
-    protected $allowAnonymous = ['asset-preview', 'upload'];
+    protected $allowAnonymous = ['index', 'asset-preview'];
 
     // Public Methods
     // =========================================================================
 
-    public function actionUpload()
+    public function actionIndex()
     {
         // AssetsController - actionSaveAsset()
         $response = Craft::$app->runAction('assets/save-asset');

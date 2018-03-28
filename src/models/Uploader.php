@@ -221,6 +221,11 @@ class Uploader extends Model
             $settings[$property] = $this->$property;
         }
 
+        if(Craft::$app->getConfig()->getGeneral()->devMode)
+        {
+            $settings['debug'] = true;
+        }
+
         return $encode ? JsonHelper::encode($settings) : $settings;
     }
 
