@@ -13,12 +13,6 @@ var AssetUp = (function() {
 			ghostClass: "assetup--asset-ghost",
 			chosenClass: "assetup--asset-chosen",
 			filter: ".assetup--controls, .assetup--remove",
-			// filter: ".assetup--remove, .assetup--controls",
-			onFilter: function(event) {
-				// event.item.click();
-				// api.removeAsset(event.item);
-				// evt.item.parentNode.removeChild(evt.item);
-			}
 		},
 		layout: "grid",
 		preview: "image",
@@ -36,11 +30,8 @@ var AssetUp = (function() {
 		assets: null,
 		controls: null,
 		input: null,
+		preload: null,
 		errors: null,
-
-		progress: null,
-		overlay: null, // TODO: Possibly remove when upload progress reworked.
-		uploadPercent: null
 	};
 
 	var constructor = function(options) {
@@ -237,6 +228,14 @@ var AssetUp = (function() {
 		// Public Methods
 		// =========================================================================
 
+		var cancelAllUploads = function() {
+
+		}
+
+		var addUploadToQueue = function(asset) {
+
+		}
+
 		api.uploadAssets = function(assets) {
 			// Guard
 			assets = assets || false;
@@ -247,7 +246,6 @@ var AssetUp = (function() {
 			// Limit
 			if (settings.limit) {
 				var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
-
 				var leftOfLimit = settings.limit - numberOfUploadedAssets;
 				if (assets.length > leftOfLimit) {
 					api.setError(
@@ -259,32 +257,31 @@ var AssetUp = (function() {
 
 			// Assets
 			assets = [...assets];
-
-			// Create Preview & Add To Queue
-			assets.forEach(function(asset, i) {
-				var placeholder = htmlToElement(
-					'<li class="assetup--asset assetup--asset-placeholder assetup--isLoading"></li>'
-				);
-				dom.controls.before(placeholder);
-				// TODO: Add to queue
-			});
-
-			// assets.forEach(api.uploadAsset);
+			assets.forEach(api.uploadAsset);
 		};
 
 		api.uploadAsset = function(asset, i) {
-			// TODO: Some Validation
 
-			//         var allowedFileTypes = FINDARACEGLOBAL.ASSETS.allowedFileTypes,
-			//         maxUpload = FINDARACEGLOBAL.ASSETS.maxUpload,
-			//         maxUploadMB = (maxUpload / (1024*1024)).toFixed(0);
+			// Placeholder
+			var placeholder = htmlToElement(
+				'<li class="assetup--asset assetup--assetPlaceholder assetup--isLoading"></li>'
+			);
+			dom.controls.before(placeholder);
 
-			//         if(asset.size > maxUpload)
-			//         {
-			//             FINDARACE.forms.addFieldError($field, 'File size cannot exceed ' + maxUploadMB + 'MB');
-			//             $assetUploadHolder.removeClass('is-loading');
-			//             return false;
-			//         }
+			// Queue
+			console.log('ASSET', asset);
+
+			// Validation
+			// var allowedFileTypes = FINDARACEGLOBAL.ASSETS.allowedFileTypes,
+			// maxUpload = FINDARACEGLOBAL.ASSETS.maxUpload,
+			// maxUploadMB = (maxUpload / (1024*1024)).toFixed(0);
+
+			// if(asset.size > maxUpload)
+			// {
+			//     FINDARACE.forms.addFieldError($field, 'File size cannot exceed ' + maxUploadMB + 'MB');
+			//     $assetUploadHolder.removeClass('is-loading');
+			//     return false;
+			// }
 
 			var xhr = new XMLHttpRequest();
 			var formData = new FormData();
@@ -300,7 +297,6 @@ var AssetUp = (function() {
 					break;
 			}
 			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
-
 			formData.append("name", settings.name);
 			formData.append("preview", settings.preview);
 			formData.append("transform", settings.transform);
@@ -324,15 +320,20 @@ var AssetUp = (function() {
 				if (xhr.readyState !== 4) return;
 
 				if (xhr.status === 200) {
-					var preview = render(xhr.response.html);
 
-					// TODO: Check FAR for the simple image uploader checker,
-					//       maybe pass the image url to be previewed from the controller
-					imagesLoaded(preview, function() {
-						dom.controls.before(preview); // TODO: Some transition here, fade images in
-						// updatePreviewProgress(i, 100);
+					var preview = htmlToElement(xhr.response.html);
+
+					if(xhr.response.image) {
+						preloadImage(xhr.response.image, function() {
+							// Todo update preloading status
+							dom.assets.replaceChild(preview, placeholder);
+							checkLimit();
+						});
+					} else {
+						dom.assets.replaceChild(preview, placeholder);
 						checkLimit();
-					});
+					}
+
 				} else {
 					// TODO: Error Message
 					console.log("The request failed!");
@@ -343,50 +344,16 @@ var AssetUp = (function() {
 			xhr.send(formData);
 		};
 
-		// api.setAssetPreview = function(id, i) {
-		// 	updatePreviewProgress(i, 0);
+		var preloadImage = function(url, success) {
 
-		// 	// See: https://gist.github.com/sgnl/bd760187214681cdb6dd
-		// 	var xhr = new XMLHttpRequest();
-		// 	var data = {
-		// 		action: "assetup/upload/asset-preview",
-		// 		[settings.csrfTokenName]: settings.csrfTokenValue,
-		// 		assetId: id,
-		// 		name: settings.name,
-		// 		preview: settings.preview,
-		// 		transform: settings.transform,
-		// 		enableReorder: settings.enableReorder,
-		// 		enableRemove: settings.enableRemove
-		// 	};
+	        var image = htmlToElement('<img style="display:none !important;" class="assetup--isHidden" src="'+url+'">');
+			image.addEventListener('load', function() {
+				image.remove();
+	        	success();
+	        }, false);
 
-		// 	xhr.open("POST", "/", true);
-		// 	xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-		// 	xhr.setRequestHeader("Accept", "application/json");
-		// 	xhr.setRequestHeader(
-		// 		"Content-type",
-		// 		"application/x-www-form-urlencoded"
-		// 	);
-
-		// 	xhr.onreadystatechange = function() {
-		// 		if (xhr.readyState !== 4) return;
-
-		// 		if (xhr.status === 200) {
-		// 			var preview = render(xhr.response.html);
-
-		// 			imagesLoaded(preview, function() {
-		// 				dom.controls.before(preview); // TODO: Some transition here, fade images in
-		// 				updatePreviewProgress(i, 100);
-		// 				checkLimit();
-		// 			});
-		// 		} else {
-		// 			// TODO: Set Errors
-		// 			console.log("Could not get preview!");
-		// 		}
-		// 	};
-
-		// 	xhr.responseType = "json";
-		// 	xhr.send(objToParams(data));
-		// };
+	        dom.preload.before(image);
+		};
 
 		api.getNumberOfUploadedAssets = function() {
 			return dom.assets.childElementCount - 1;
@@ -429,11 +396,7 @@ var AssetUp = (function() {
 				'[name="assetUpAssetInput"]'
 			);
 			dom.errors = dom.uploader.querySelector(".assetup--errors");
-			dom.progress = dom.uploader.querySelector(".assetup--progress");
-			dom.overlay = dom.uploader.querySelector(".assetup--overlay"); // TODO: POssibly remove when upload progress reworked.
-			dom.uploadPercent = dom.progress.querySelector(
-				".assetup--uploadPercent"
-			);
+			dom.preload = dom.uploader.querySelector(".assetup--preload");
 
 			// Reorder
 			initReorderAssets();
