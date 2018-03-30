@@ -6,6 +6,7 @@ use Craft;
 use craft\web\View;
 use craft\db\Query;
 use craft\fields\Assets as AssetsField;
+use craft\helpers\Assets as AssetsHelper;
 
 class AssetUpHelper
 {
@@ -22,6 +23,34 @@ class AssetUpHelper
 
         $view->setTemplateMode($currentTemplateMode);
         return $html;
+    }
+
+    // Field Map
+    // =========================================================================
+
+    public static function getAllowedFileExtensionsByFieldKinds(array $kinds)
+    {
+        $fileKinds = AssetsHelper::getFileKinds();
+
+        $allowedFileExtensions = [];
+        foreach($kinds as $kind)
+        {
+            if(array_key_exists($kind, $fileKinds))
+            {
+                $allowedFileExtensions = array_merge($allowedFileExtensions, $fileKinds[$kind]['extensions']);
+            }
+        }
+
+        $allowedFileExtensionsFromConfig = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+
+        foreach ($allowedFileExtensions as $key => $allowedFileExtension)
+        {
+            if(!in_array($allowedFileExtension, $allowedFileExtensionsFromConfig))
+            {
+                unset($allowedFileExtensions[$key]);
+            }
+        }
+        return $allowedFileExtensions;
     }
 
     // Field Map

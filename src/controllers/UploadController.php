@@ -24,10 +24,9 @@ class UploadController extends Controller
         $response = Craft::$app->runAction('assets/save-asset');
 
         // Response Errors
-        if(!$response->getIsSuccessful()) {
+        if(!$response->getIsSuccessful())
+        {
             $error = $response->data['error'] ?? 'Upload Error';
-            // Add errors to placeholder
-            // Could catch login error here, cancel all and display a global error.
             return $this->asErrorJson($error);
         }
 

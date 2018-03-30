@@ -1,51 +1,5 @@
 # Asset Up plugin for Craft CMS 3.x
 
-Front end asset upload tools for Craft CMS
-
-![Screenshot](resources/img/plugin-logo.png)
-
-## Requirements
-
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
-
-## Installation
-
-To install the plugin, follow these instructions.
-
-1.  Open your terminal and go to your Craft project:
-
-        cd /path/to/project
-
-2.  Then tell Composer to load the plugin:
-
-        composer require https://github.com/fruitstudios/assetup/assetup
-
-3.  In the Control Panel, go to Settings → Plugins and click the “Install” button for Asset Up.
-
-## Asset Up Overview
-
--Insert text here-
-
-## Configuring Asset Up
-
--Insert text here-
-
-## Using Asset Up
-
--Insert text here-
-
-## Asset Up Roadmap
-
-Some things to do, and ideas for potential features:
-
-*   Release it
-
-Brought to you by [Fruit Studios](http://fruitstudios.co.uk)
-
-<p align="left"><a href="https://github.com/fruitstudios/craft-linkit" target="_blank"><img width="100" height="100" src="resources/img/linkit.svg" alt="Linkit"></a></p>
-
-# Asset Up plugin for Craft CMS 3.x
-
 The unausuming front end asset uploader for Craft 3.
 Use as a standalone uploader or as field in one of your forms:
 
@@ -178,6 +132,7 @@ You can also define whether lists can give away, give and keep a copy (`clone`),
     	folder: 'my/folder/path',
     	preview: 'image',
     	transform: 'square',
+        themeColour: '#ff00ff',
     }) }}
 
 <p align="left"><img width="450px" src="resources/img/customise-labels.png" alt="Linkit"></a></p>
@@ -192,6 +147,7 @@ You can also define whether lists can give away, give and keep a copy (`clone`),
         element: 345678,
         preview: 'image',
         transform: 'square',
+        themeColour: '#ff00ff',
     }) }}
 
 <p align="left"><img width="450px" src="resources/img/customise-labels.png" alt="Linkit"></a></p>

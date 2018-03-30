@@ -29,24 +29,16 @@
     height: auto;
     position: relative;
     display: block;
-    background-color: grey
-}
-
-.assetup--assetPlaceholder {
-
-}
-
-.assetup--asset img {
-    display: block;
+    background-color: grey;
 }
 
 .assetup--reorderEnabled .assetup--asset:hover {
     cursor: all-scroll;
 }
 
-.assetup--asset-background {}
-.assetup--asset-image {}
-.assetup--asset-file {}
+.assetup--assetPreview-background {}
+.assetup--assetPreview-image {}
+.assetup--assetPreview-file {}
 
 .assetup--asset img {
     max-height: 100%;
@@ -82,11 +74,41 @@
     z-index: 99;
 }
 
-.assetup--asset-chosen {
+
+.assetup--assetDragging {}
+.assetup--assetChosen {
     opacity: 0.5;
 }
-.assetup--asset-ghost {
+.assetup--assetGhost {
     opacity: 1;
+}
+
+/* Asset Placeholder */
+.assetup--placeholder {
+    width: 49%;
+    margin-bottom: 2%;
+    height: auto;
+    position: relative;
+    display: block;
+    background-color: grey;
+    z-index: 80
+}
+.assetup--placeholderCancel {
+    position: absolute;
+    z-index: 90;
+    right: 0;
+}
+.assetup--placeholderProgress {
+    color: green;
+    z-index: 90;
+}
+.assetup--placeholderError {
+    color: red;
+    z-index: 90;
+}
+
+.assetup--asset img {
+    display: block;
 }
 
 /* Controls */

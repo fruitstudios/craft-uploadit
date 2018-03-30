@@ -9,9 +9,9 @@ var AssetUp = (function() {
 			animation: 150,
 			// handle: ".assetup--handle",
 			draggable: ".assetup--asset",
-			dragClass: "assetup--asset-dragging",
-			ghostClass: "assetup--asset-ghost",
-			chosenClass: "assetup--asset-chosen",
+			dragClass: "assetup--assetDragging",
+			ghostClass: "assetup--assetGhost",
+			chosenClass: "assetup--assetChosen",
 			filter: ".assetup--controls, .assetup--remove",
 		},
 		layout: "grid",
@@ -22,16 +22,14 @@ var AssetUp = (function() {
 		transform: "",
 		enableReorder: true,
 		enableRemove: true,
-		target: false
+		target: false,
+		limit: null,
+		maxSize: 0,
+		allowedFileExtensions: [],
 	};
 
-	var dom = {
-		uploader: null,
-		assets: null,
-		controls: null,
-		input: null,
-		preload: null,
-		errors: null,
+	var templates = {
+		placeholder: '<li class="assetup--placeholder assetup--isLoading"><span class="assetup--placeholderCancel">CANCEL</span><span class="assetup--placeholderProgress"></span><span class="assetup--placeholderError"></span></li>'
 	};
 
 	var constructor = function(options) {
@@ -44,8 +42,15 @@ var AssetUp = (function() {
 		// =========================================================================
 
 		var settings;
-		var processing;
-		var queue = [];
+		var queue = {};
+		var dom = {
+			uploader: null,
+			assets: null,
+			controls: null,
+			input: null,
+			preload: null,
+			errors: null,
+		};
 
 		// Private Methods
 		// =========================================================================
@@ -99,20 +104,6 @@ var AssetUp = (function() {
 			return span.firstChild;
 		};
 
-		// var startProcessingUploads = function() {
-		// 	dom.uploader.classList.add("assetup--isLoading");
-		// 	dom.progress.classList.remove("assetup--isHidden");
-		// 	// TODO: POssibly remove when upload progress reworked.
-		// 	dom.overlay.classList.remove("assetup--isHidden");
-		// };
-
-		// var stoppedProcessingUploads = function() {
-		// 	dom.uploader.classList.remove("assetup--isLoading");
-		// 	dom.progress.classList.add("assetup--isHidden");
-		// 	// TODO: POssibly remove when upload progress reworked.
-		// 	dom.overlay.classList.add("assetup--isHidden");
-		// };
-
 		var checkLimit = function() {
 			var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
 			if (settings.limit && numberOfUploadedAssets >= settings.limit) {
@@ -121,49 +112,6 @@ var AssetUp = (function() {
 				dom.controls.classList.remove("assetup--isHidden");
 			}
 		};
-
-		// https://www.smashingmagazine.com/2018/01/drag-drop-file-uploader-vanilla-js/
-
-		// var initializeUploadProgress = function(numberOfAssets) {
-		// 	startProcessingUploads();
-		// 	dom.uploadPercent.textContent = "0";
-		// 	processing = {
-		// 		uploads: [],
-		// 		previews: []
-		// 	};
-		// 	for (let i = numberOfAssets; i > 0; i--) {
-		// 		processing.uploads.push(0);
-		// 		processing.previews.push(0);
-		// 	}
-		// };
-
-		// var updateUploadProgress = function(i, percent) {
-		// 	processing.uploads[i] = percent;
-		// 	var total =
-		// 		processing.uploads.reduce(
-		// 			(total, current) => total + current,
-		// 			0
-		// 		) / processing.uploads.length;
-		// 	dom.uploadPercent.textContent = total;
-		// 	if (total == 100) {
-		// 		dom.progress.textContent = "Processing Uploads...";
-		// 	}
-		// };
-
-		// var updatePreviewProgress = function(i, percent) {
-		// 	processing.previews[i] = percent;
-		// 	var totalProcessed = processing.previews.filter(function(percent) {
-		// 		return percent === 100;
-		// 	});
-		// 	dom.progress.textContent =
-		// 		"Processing " +
-		// 		(totalProcessed.length + 1) +
-		// 		" of " +
-		// 		processing.previews.length;
-		// 	if (totalProcessed.length == processing.previews.length) {
-		// 		stoppedProcessingUploads();
-		// 	}
-		// };
 
 		// Event Handlers
 		// =========================================================================
@@ -190,7 +138,7 @@ var AssetUp = (function() {
 					upload.classList.remove("assetup--isDragging");
 					var assets = event.dataTransfer.files;
 					if (!assets) {
-						api.setError("Drop Error");
+						api.setGlobalError("Drop Error");
 						return;
 					}
 					api.uploadAssets(assets);
@@ -225,16 +173,46 @@ var AssetUp = (function() {
 			api.uploadAssets(dom.input.files);
 		};
 
+		var cancelUploadHandler = function(event) {
+			if (!event.target.closest('.assetup--placeholderCancel')) {
+				return;
+			}
+			event.preventDefault();
+			var placeholder = event.target.closest('.assetup--placeholder');
+			cancelUpload(placeholder.getAttribute('data-qid'));
+		};
+
 		// Public Methods
 		// =========================================================================
 
 		var cancelAllUploads = function() {
+			for (var qid in queue) {
+				cancelUpload(qid);
+			}
+			queue = {};
+			checkLimit();
+			setGlobalError(false);
+		};
 
-		}
+		var cancelUpload = function(qid) {
+			if (queue.hasOwnProperty(qid)) {
+				if(queue[qid].xhr) {
+					queue[qid].xhr.abort();
+				}
+				queue[qid].dom.placeholder.remove();
+				delete queue[qid];
+				checkLimit();
+			}
+		};
 
-		var addUploadToQueue = function(asset) {
+		var updateUploadProgress = function(qid, progress) {
+			queue[qid].dom.progress.textContent = progress;
+		};
 
-		}
+		var setUploadError = function(qid, errors) {
+			queue[qid].dom.placeholder.classList.remove('assetup--isWorking');
+			queue[qid].dom.error.textContent = errors;
+		};
 
 		api.uploadAssets = function(assets) {
 			// Guard
@@ -248,7 +226,7 @@ var AssetUp = (function() {
 				var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
 				var leftOfLimit = settings.limit - numberOfUploadedAssets;
 				if (assets.length > leftOfLimit) {
-					api.setError(
+					api.setGlobalError(
 						"You can only upload another " + leftOfLimit + " assets"
 					);
 					return;
@@ -257,33 +235,110 @@ var AssetUp = (function() {
 
 			// Assets
 			assets = [...assets];
+
+			// Queue & Placeholder
+			assets.forEach(function(asset, i) {
+
+				var qid = 'asset' + Math.random().toString(36).substr(2, 5);
+				asset.qid = qid;
+
+				var placeholder = htmlToElement(templates.placeholder);
+				placeholder.setAttribute('data-qid', qid);
+
+				queue[qid] = {
+					asset: asset,
+					xhr: null,
+					dom: {
+						placeholder: placeholder,
+						error: placeholder.querySelector('.assetup--placeholderError'),
+						progress: placeholder.querySelector('.assetup--placeholderProgress'),
+					}
+				};
+				updateUploadProgress(qid, '0%');
+				dom.controls.before(placeholder);
+
+			});
+
+			console.log(queue);
+
+			// Upload
 			assets.forEach(api.uploadAsset);
 		};
 
-		api.uploadAsset = function(asset, i) {
+		api.uploadAsset = function(asset) {
 
-			// Placeholder
-			var placeholder = htmlToElement(
-				'<li class="assetup--asset assetup--assetPlaceholder assetup--isLoading"></li>'
-			);
-			dom.controls.before(placeholder);
+			// Validate Size
+			if(asset.size > settings.maxSize) {
+				setUploadError(asset.qid, 'File size cannot exceed ' + settings.maxSizeMb + 'MB');
+				updateUploadProgress(asset.qid, '');
+				return;
+			}
 
-			// Queue
-			console.log('ASSET', asset);
+			// Validate Type
+			if(settings.allowedFileExtensions.indexOf(asset.name.split('.').pop())) {
+				setUploadError(asset.qid, 'Invalid file type');
+				updateUploadProgress(asset.qid, '');
 
-			// Validation
-			// var allowedFileTypes = FINDARACEGLOBAL.ASSETS.allowedFileTypes,
-			// maxUpload = FINDARACEGLOBAL.ASSETS.maxUpload,
-			// maxUploadMB = (maxUpload / (1024*1024)).toFixed(0);
+				return;
+			}
 
-			// if(asset.size > maxUpload)
-			// {
-			//     FINDARACE.forms.addFieldError($field, 'File size cannot exceed ' + maxUploadMB + 'MB');
-			//     $assetUploadHolder.removeClass('is-loading');
-			//     return false;
-			// }
-
+			// Request
 			var xhr = new XMLHttpRequest();
+
+			// Progress
+			xhr.upload.onprogress = function(event) {
+				var progress = Math.round(event.loaded / event.total * 100);
+				updateUploadProgress(asset.qid, progress + '%');
+			};
+
+			xhr.open("POST", "/", true);
+			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+			xhr.setRequestHeader("Accept", "application/json");
+
+			// Setup our listener to process compeleted requests
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState !== 4) return;
+
+				if (xhr.status === 200) {
+
+					if(xhr.response.error) {
+
+						setUploadError(asset.qid, xhr.response.error);
+
+					} else {
+
+						updateUploadProgress(asset.qid, 'Processing Upload');
+
+						var preview = htmlToElement(xhr.response.html);
+
+						if(xhr.response.image) {
+							preloadImage(xhr.response.image, function() {
+								uploadAssetComplete(asset.qid, preview);
+							});
+						} else {
+							uploadAssetComplete(asset.qid, preview);
+						}
+					}
+
+				} else {
+					api.setGlobalError(xhr.response.error || 'Request Failed');
+					cancelAllUploads();
+				}
+			};
+
+			xhr.responseType = "json";
+			xhr.send(getAssetFormData(asset));
+
+			queue[asset.qid].xhr = xhr;
+		};
+
+		var uploadAssetComplete = function(qid, preview) {
+			dom.assets.replaceChild(preview, queue[qid].dom.placeholder);
+			delete queue[qid];
+			checkLimit();
+		}
+
+		var getAssetFormData = function(asset) {
 			var formData = new FormData();
 			formData.append("action", "assetup/upload");
 			formData.append("assets-upload", asset);
@@ -302,46 +357,7 @@ var AssetUp = (function() {
 			formData.append("transform", settings.transform);
 			formData.append("enableReorder", settings.enableReorder);
 			formData.append("enableRemove", settings.enableRemove);
-
-			// Update progress
-			xhr.upload.onprogress = function(event) {
-				// updateUploadProgress(
-				// 	i,
-				// 	Math.round(event.loaded / event.total * 100)
-				// );
-			};
-
-			xhr.open("POST", "/", true);
-			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-			xhr.setRequestHeader("Accept", "application/json");
-
-			// Setup our listener to process compeleted requests
-			xhr.onreadystatechange = function() {
-				if (xhr.readyState !== 4) return;
-
-				if (xhr.status === 200) {
-
-					var preview = htmlToElement(xhr.response.html);
-
-					if(xhr.response.image) {
-						preloadImage(xhr.response.image, function() {
-							// Todo update preloading status
-							dom.assets.replaceChild(preview, placeholder);
-							checkLimit();
-						});
-					} else {
-						dom.assets.replaceChild(preview, placeholder);
-						checkLimit();
-					}
-
-				} else {
-					// TODO: Error Message
-					console.log("The request failed!");
-				}
-			};
-
-			xhr.responseType = "json";
-			xhr.send(formData);
+			return formData;
 		};
 
 		var preloadImage = function(url, success) {
@@ -359,7 +375,7 @@ var AssetUp = (function() {
 			return dom.assets.childElementCount - 1;
 		};
 
-		api.setError = function(error) {
+		api.setGlobalError = function(error) {
 			error = error || false;
 			if (error) {
 				dom.errors.textContent = error;
@@ -387,6 +403,7 @@ var AssetUp = (function() {
 					settings
 				);
 			}
+			settings.maxSizeMb = (settings.maxSize / (1024*1024)).toFixed(0);
 
 			// Elements
 			dom.uploader = document.getElementById(settings.id);
@@ -409,6 +426,7 @@ var AssetUp = (function() {
 			// Input
 			dom.uploader.addEventListener("change", assetInputHandler, false);
 			dom.uploader.addEventListener("click", uploadAssetHandler, false);
+			dom.uploader.addEventListener("click", cancelUploadHandler, false);
 		};
 
 		api.init(options);

@@ -13,7 +13,6 @@ use craft\base\VolumeInterface;
 use craft\base\Model;
 use craft\models\VolumeFolder;
 use craft\helpers\Json as JsonHelper;
-use craft\helpers\Assets as AssetsHelper;
 
 class Uploader extends Model
 {
@@ -32,7 +31,7 @@ class Uploader extends Model
     private $_element;
     private $_folder;
 
-    private $_defaultAllowedfileKinds;
+    private $_defaultAllowedFileExtensions;
     private $_defaultMaxUploadFileSize;
     private $_defaultJavascriptVariables;
 
@@ -44,7 +43,7 @@ class Uploader extends Model
         'transform',
         'limit',
         'maxSize',
-        'acceptedFileTypes',
+        'allowedFileExtensions',
         'enableDropToUpload',
         'enableReorder',
         'enableRemove',
@@ -97,7 +96,7 @@ class Uploader extends Model
     public $transform = '';
     public $limit;
     public $maxSize;
-    public $acceptedFileTypes;
+    public $allowedFileExtensions;
 
 
     // Public Methods
@@ -110,7 +109,7 @@ class Uploader extends Model
             'csrfTokenName' => Craft::$app->getConfig()->getGeneral()->csrfTokenName,
             'csrfTokenValue' => Craft::$app->getRequest()->getCsrfToken(),
         ];
-        $this->_defaultAllowedfileKinds = AssetsHelper::getFileKinds();
+        $this->_defaultAllowedFileExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
         $this->_defaultMaxUploadFileSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
 
 
@@ -119,7 +118,7 @@ class Uploader extends Model
         $this->selectText = Craft::t('assetup', 'Select files');
         $this->dropText = Craft::t('assetup', 'drop files here');
         $this->maxSize = $this->_defaultMaxUploadFileSize;
-        $this->acceptedFileTypes = $this->_defaultAllowedfileKinds;
+        $this->allowedFileExtensions = $this->_defaultAllowedFileExtensions;
 
         $this->setAttributes($attributes, false);
     }
@@ -169,8 +168,8 @@ class Uploader extends Model
         {
             case self::TARGET_FIELD:
 
-                $this->limit = $this->_field->limit ? $this->_field->limit : null;
-                $this->acceptedFileTypes = $this->_field->allowedKinds;
+                $this->limit = (int) ($this->_field->limit ? $this->_field->limit : null);
+                $this->allowedFileExtensions = AssetUpHelper::getAllowedFileExtensionsByFieldKinds($this->_field->allowedKinds);
 
                 break;
 
