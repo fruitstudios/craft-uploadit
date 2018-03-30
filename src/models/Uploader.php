@@ -96,7 +96,7 @@ class Uploader extends Model
     public $transform = '';
     public $limit;
     public $maxSize;
-    public $allowedFileExtensions;
+    public $allowedFileExtensions = [];
 
 
     // Public Methods
@@ -170,7 +170,6 @@ class Uploader extends Model
 
                 $this->limit = (int) ($this->_field->limit ? $this->_field->limit : null);
                 $this->allowedFileExtensions = AssetUpHelper::getAllowedFileExtensionsByFieldKinds($this->_field->allowedKinds);
-
                 break;
 
             case self::TARGET_FOLDER:

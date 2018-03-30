@@ -209,9 +209,9 @@ var AssetUp = (function() {
 			queue[qid].dom.progress.textContent = progress;
 		};
 
-		var setUploadError = function(qid, errors) {
-			queue[qid].dom.placeholder.classList.remove('assetup--isWorking');
-			queue[qid].dom.error.textContent = errors;
+		var setUploadError = function(qid, error) {
+			queue[qid].dom.placeholder.classList.remove('assetup--isLoading');
+			queue[qid].dom.error.textContent = error;
 		};
 
 		api.uploadAssets = function(assets) {
@@ -258,8 +258,7 @@ var AssetUp = (function() {
 				dom.controls.before(placeholder);
 
 			});
-
-			console.log(queue);
+			checkLimit();
 
 			// Upload
 			assets.forEach(api.uploadAsset);
@@ -275,10 +274,10 @@ var AssetUp = (function() {
 			}
 
 			// Validate Type
-			if(settings.allowedFileExtensions.indexOf(asset.name.split('.').pop())) {
+			var extension = asset.name.split('.').pop();
+			if(settings.allowedFileExtensions.indexOf(extension) === -1) {
 				setUploadError(asset.qid, 'Invalid file type');
 				updateUploadProgress(asset.qid, '');
-
 				return;
 			}
 

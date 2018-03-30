@@ -43,14 +43,15 @@ class AssetUpHelper
 
         $allowedFileExtensionsFromConfig = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
 
-        foreach ($allowedFileExtensions as $key => $allowedFileExtension)
+        $vaidatedAllowedFileExtensions = [];
+        foreach ($allowedFileExtensions as $allowedFileExtension)
         {
-            if(!in_array($allowedFileExtension, $allowedFileExtensionsFromConfig))
+            if(in_array($allowedFileExtension, $allowedFileExtensionsFromConfig))
             {
-                unset($allowedFileExtensions[$key]);
+                $vaidatedAllowedFileExtensions[] = $allowedFileExtension;
             }
         }
-        return $allowedFileExtensions;
+        return $vaidatedAllowedFileExtensions;
     }
 
     // Field Map
