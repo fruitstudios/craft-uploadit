@@ -140,6 +140,9 @@ class Uploader extends Model
 
     public function rules()
     {
+
+        // TODO: Should target use this for validation: https://www.yiiframework.com/doc/guide/2.0/en/tutorial-core-validators#filter
+
         $rules = parent::rules();
         $rules[] = [['id'], 'required'];
         $rules[] = [['target'], 'required', 'message' => Craft::t('assetup', 'A valid target field, volume or folder must be defined.')];
