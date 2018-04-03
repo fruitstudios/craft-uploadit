@@ -154,7 +154,8 @@ You can also define whether lists can give away, give and keep a copy (`clone`),
 
 ## Roadmap
 
-*   [ ] Road map here
+*   [ ] Better validation
+*   [ ] Translate javascript strings
 
 Note: This plugin will become a paid add-on when the Craft Plugin store becomes available.
 

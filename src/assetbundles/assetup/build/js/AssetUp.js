@@ -215,6 +215,10 @@ var AssetUp = (function() {
 		};
 
 		api.uploadAssets = function(assets) {
+
+			// Clear global errors
+			api.setGlobalError('');
+
 			// Guard
 			assets = assets || false;
 			if (!assets) {
@@ -226,9 +230,17 @@ var AssetUp = (function() {
 				var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
 				var leftOfLimit = settings.limit - numberOfUploadedAssets;
 				if (assets.length > leftOfLimit) {
-					api.setGlobalError(
-						"You can only upload another " + leftOfLimit + " assets"
-					);
+					switch(leftOfLimit) {
+						case(0):
+							api.setGlobalError('You can\'t upload any more assets');
+							break;
+						case(1):
+							api.setGlobalError('You can only upload another 1 asset');
+							break;
+						default:
+							api.setGlobalError('You can only upload another ' + leftOfLimit + ' assets');
+							break;
+					}
 					return;
 				}
 			}
