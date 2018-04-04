@@ -6,30 +6,17 @@
 
 .assetup--assets {
     list-style-type: none;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     padding: 0;
 }
 
-.assetup--assets li:only-child {
-    width: 100%;
-}
-
-.assetup--assets li:only-child::after {
+/*.assetup--assets li::after {
     content: '';
     display: block;
-    padding-bottom: 50%;
-}
+    padding-bottom: 10%;
+}*/
 
 /* Asset */
 .assetup--asset {
-    width: 49%;
-    margin-bottom: 2%;
-    height: auto;
-    position: relative;
-    display: block;
-    background-color: grey;
 }
 
 .assetup--reorderEnabled .assetup--asset:hover {
@@ -74,7 +61,6 @@
     z-index: 99;
 }
 
-
 .assetup--assetDragging {}
 .assetup--assetChosen {
     opacity: 0.5;
@@ -85,12 +71,8 @@
 
 /* Asset Placeholder */
 .assetup--placeholder {
-    width: 49%;
-    margin-bottom: 2%;
-    height: auto;
+    border: dashed 2px lightgrey;
     position: relative;
-    display: block;
-    background-color: grey;
     z-index: 80
 }
 .assetup--placeholderCancel {
@@ -113,41 +95,13 @@
 
 /* Controls */
 .assetup--controls {
-    width: 49%;
-    height: auto;
-    position: relative;
-    margin-bottom: 2%;
-}
-
-.assetup--controls::after {
-    content: '';
-    display: block;
-    padding-bottom: 100%;
-}
-
-.assetup--controls-inner {
+    width: auto;
+    display: inline-block;
     border: 2px dashed lightgrey;
-    position: absolute;
-    margin-bottom: 8px;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 24px;
 }
 
 .assetup--upload {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -159,13 +113,11 @@
 .assetup--label {
     display: inline-block;
     padding: 8px 16px;
-    margin-bottom: 4px;
     color: white;
     background-color: #000000;
 }
 .assetup--or {}
 .assetup--btn {}
-
 
 /* Errors */
 .assetup--errors {
@@ -242,4 +194,21 @@
 .assetup--preload {
     display: none;
     visibility: hidden;
+}
+.assetup--layout-list .assetup--asset {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    position: relative;
+}
+.assetup--layout-list .assetup--placeholder {
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.assetup--layout-list .assetup--asset img {
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
 }

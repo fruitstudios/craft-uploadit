@@ -2,11 +2,22 @@
 
 {% set asset = asset ?? false %}
 {% set name = name ?? false %}
-{% set transform = transform ?? '' %}
+{% set transform = transform ?? false %}
 
 {% if asset %}
 
     {% set preview = asset.kind != 'image' ? 'file' : (preview ?? 'image') %}
+
+    {% if not transform %}
+        {% set transform = {
+            mode: 'crop',
+            width: 400,
+            height: 400,
+            quality: 90,
+            position: 'center-center'
+        } %}
+    {% endif %}
+
 
     {% set classes = [
         'assetup--asset',
@@ -46,6 +57,12 @@
 
             {% case "image" %}
                 <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
+                {{ asset.filename }}
+
+            {% case "background" %}
+                 <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
+                {{ asset.filename }}
+
 
         {% endswitch %}
 

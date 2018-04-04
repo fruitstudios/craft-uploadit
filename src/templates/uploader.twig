@@ -44,10 +44,10 @@
                     <a href="javascript:;" class="assetup--upload">
                        {#  {{ macros.icon({ icon: 'upload' }) }} #}
                         <span class="assetup--label">{{ uploader.selectText }}</span>
-                        {% if uploader.enableDropToUpload %}
+                        {# {% if uploader.enableDropToUpload %}
                             <span class="assetup--or">{{ 'or'|t('assetup') }}</span>
                             <span class="assetup--btn">{{ uploader.dropText }}</span>
-                        {% endif %}
+                        {% endif %} #}
                     </a>
 
                     <input type="file" name="assetUpAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />

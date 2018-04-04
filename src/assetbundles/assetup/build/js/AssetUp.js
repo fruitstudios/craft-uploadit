@@ -225,59 +225,57 @@ var AssetUp = (function() {
 				return;
 			}
 
-			api.canUploadAssets(function(assets) {
 
-				// Limit
-				if (settings.limit) {
-					var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
-					var leftOfLimit = settings.limit - numberOfUploadedAssets;
-					if (assets.length > leftOfLimit) {
-						switch(leftOfLimit) {
-							case(0):
-								api.setGlobalError('You can\'t upload any more assets');
-								break;
-							case(1):
-								api.setGlobalError('You can only upload another 1 asset');
-								break;
-							default:
-								api.setGlobalError('You can only upload another ' + leftOfLimit + ' assets');
-								break;
-						}
-						return;
+			// Limit
+			if (settings.limit) {
+				var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
+				var leftOfLimit = settings.limit - numberOfUploadedAssets;
+				if (assets.length > leftOfLimit) {
+					switch(leftOfLimit) {
+						case(0):
+							api.setGlobalError('You can\'t upload any more assets');
+							break;
+						case(1):
+							api.setGlobalError('You can only upload another 1 asset');
+							break;
+						default:
+							api.setGlobalError('You can only upload another ' + leftOfLimit + ' assets');
+							break;
 					}
+					return;
 				}
+			}
 
-				// Assets
-				assets = [...assets];
+			// Assets
+			assets = [...assets];
 
-				// Queue & Placeholder
-				assets.forEach(function(asset, i) {
+			// Queue & Placeholder
+			assets.forEach(function(asset, i) {
 
-					var qid = 'asset' + Math.random().toString(36).substr(2, 5);
-					asset.qid = qid;
+				var qid = 'asset' + Math.random().toString(36).substr(2, 5);
+				asset.qid = qid;
 
-					var placeholder = htmlToElement(templates.placeholder);
-					placeholder.setAttribute('data-qid', qid);
+				var placeholder = htmlToElement(templates.placeholder);
+				placeholder.setAttribute('data-qid', qid);
 
-					queue[qid] = {
-						asset: asset,
-						xhr: null,
-						dom: {
-							placeholder: placeholder,
-							error: placeholder.querySelector('.assetup--placeholderError'),
-							progress: placeholder.querySelector('.assetup--placeholderProgress'),
-						}
-					};
-					updateUploadProgress(qid, '0%');
-					dom.controls.before(placeholder);
-
-				});
-				checkLimit();
-
-				// Upload
-				assets.forEach(api.uploadAsset);
+				queue[qid] = {
+					asset: asset,
+					xhr: null,
+					dom: {
+						placeholder: placeholder,
+						error: placeholder.querySelector('.assetup--placeholderError'),
+						progress: placeholder.querySelector('.assetup--placeholderProgress'),
+					}
+				};
+				updateUploadProgress(qid, '0%');
+				dom.controls.before(placeholder);
 
 			});
+			checkLimit();
+
+			// Upload
+			assets.forEach(api.uploadAsset);
+
 		};
 
 		api.uploadAsset = function(asset) {
