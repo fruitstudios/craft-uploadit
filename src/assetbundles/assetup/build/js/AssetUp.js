@@ -225,55 +225,59 @@ var AssetUp = (function() {
 				return;
 			}
 
-			// Limit
-			if (settings.limit) {
-				var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
-				var leftOfLimit = settings.limit - numberOfUploadedAssets;
-				if (assets.length > leftOfLimit) {
-					switch(leftOfLimit) {
-						case(0):
-							api.setGlobalError('You can\'t upload any more assets');
-							break;
-						case(1):
-							api.setGlobalError('You can only upload another 1 asset');
-							break;
-						default:
-							api.setGlobalError('You can only upload another ' + leftOfLimit + ' assets');
-							break;
+			api.canUploadAssets(function(assets) {
+
+				// Limit
+				if (settings.limit) {
+					var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
+					var leftOfLimit = settings.limit - numberOfUploadedAssets;
+					if (assets.length > leftOfLimit) {
+						switch(leftOfLimit) {
+							case(0):
+								api.setGlobalError('You can\'t upload any more assets');
+								break;
+							case(1):
+								api.setGlobalError('You can only upload another 1 asset');
+								break;
+							default:
+								api.setGlobalError('You can only upload another ' + leftOfLimit + ' assets');
+								break;
+						}
+						return;
 					}
-					return;
 				}
-			}
 
-			// Assets
-			assets = [...assets];
+				// Assets
+				assets = [...assets];
 
-			// Queue & Placeholder
-			assets.forEach(function(asset, i) {
+				// Queue & Placeholder
+				assets.forEach(function(asset, i) {
 
-				var qid = 'asset' + Math.random().toString(36).substr(2, 5);
-				asset.qid = qid;
+					var qid = 'asset' + Math.random().toString(36).substr(2, 5);
+					asset.qid = qid;
 
-				var placeholder = htmlToElement(templates.placeholder);
-				placeholder.setAttribute('data-qid', qid);
+					var placeholder = htmlToElement(templates.placeholder);
+					placeholder.setAttribute('data-qid', qid);
 
-				queue[qid] = {
-					asset: asset,
-					xhr: null,
-					dom: {
-						placeholder: placeholder,
-						error: placeholder.querySelector('.assetup--placeholderError'),
-						progress: placeholder.querySelector('.assetup--placeholderProgress'),
-					}
-				};
-				updateUploadProgress(qid, '0%');
-				dom.controls.before(placeholder);
+					queue[qid] = {
+						asset: asset,
+						xhr: null,
+						dom: {
+							placeholder: placeholder,
+							error: placeholder.querySelector('.assetup--placeholderError'),
+							progress: placeholder.querySelector('.assetup--placeholderProgress'),
+						}
+					};
+					updateUploadProgress(qid, '0%');
+					dom.controls.before(placeholder);
+
+				});
+				checkLimit();
+
+				// Upload
+				assets.forEach(api.uploadAsset);
 
 			});
-			checkLimit();
-
-			// Upload
-			assets.forEach(api.uploadAsset);
 		};
 
 		api.uploadAsset = function(asset) {
@@ -341,6 +345,41 @@ var AssetUp = (function() {
 			xhr.send(getAssetFormData(asset));
 
 			queue[asset.qid].xhr = xhr;
+		};
+
+		api.canUploadAssets = function(success) {
+
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", "/", true);
+			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+			xhr.setRequestHeader("Accept", "application/json");
+
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState !== 4) return;
+				if (xhr.status === 200) {
+
+					if(xhr.response.success) {
+
+						success();
+
+					} else {
+
+						api.setGlobalError(xhr.response.error);
+						cancelAllUploads();
+
+					}
+
+				} else {
+					api.setGlobalError(xhr.response.error);
+					cancelAllUploads();
+				}
+			};
+
+			xhr.responseType = "json";
+			var formData = new FormData();
+			formData.append("action", "assetup/upload/can-upload");
+			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
+			xhr.send(formData);
 		};
 
 		var uploadAssetComplete = function(qid, preview) {

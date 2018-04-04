@@ -13,7 +13,7 @@ class UploadController extends Controller
     // Protected Properties
     // =========================================================================
 
-    protected $allowAnonymous = ['index'];
+    protected $allowAnonymous = ['index', 'can-upload'];
 
     // Public Methods
     // =========================================================================
@@ -61,6 +61,28 @@ class UploadController extends Controller
             'asset' => $response->data,
             'html' => $html,
             'image' => $asset->kind == 'image' ? $asset->getUrl($transform) : false
+        ]);
+    }
+
+    public function actionCanUpload()
+    {
+        $this->requireAcceptsJson();
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if(!$currentUser)
+        {
+            return $this->asErrorJson(Craft::t('assetup', 'Only logged in users can upload assets.'));
+        }
+
+        // TODO: this probably needs to happen else where, based on the specific volume permissions
+        //
+        // if (!Craft::$app->getUser()->checkPermission('deleteUsers'))
+        // {
+        //     return $this->asErrorJson(Craft::t('assetup', 'You don\'t have permission to upload assets.'));
+        // }
+
+        return $this->asJson([
+            'success' => true,
         ]);
     }
 
