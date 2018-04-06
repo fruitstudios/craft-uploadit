@@ -36,8 +36,9 @@
 
             {% endfor %}
 
+        </ul>
 
-            <li class="assetup--controls{{ uploader.limit and uploader.assets|length >= uploader.limit ? ' assetup--isHidden' }}">
+        <div class="assetup--controls{{ uploader.limit and uploader.assets|length >= uploader.limit ? ' assetup--isHidden' }}">
 
                 <div class="assetup--controls-inner">
 
@@ -53,9 +54,7 @@
                     <input type="file" name="assetUpAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />
 
                 </div>
-            </li>
-
-        </ul>
+            </div>
 
         <div class="assetup--preload assetup--isHidden"></div>
 

@@ -29,7 +29,8 @@ var AssetUp = (function() {
 	};
 
 	var templates = {
-		placeholder: '<li class="assetup--placeholder assetup--isLoading"><span class="assetup--placeholderCancel">CANCEL</span><span class="assetup--placeholderProgress"></span><span class="assetup--placeholderError"></span></li>'
+		// placeholder: '<li class="assetup--placeholder assetup--isLoading"><span class="assetup--placeholderCancel">Cancel</span><span class="assetup--placeholderProgress"></span><span class="assetup--placeholderError"></span></li>'
+		placeholder: '<li class="assetup--placeholder assetup--isLoading"><span class="assetup--placeholderCancel"><a class="assetup--remove"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path d="M32.202 27.36L58.62.944c1.226-1.225 3.212-1.225 4.437 0s1.225 3.21 0 4.437L36.64 31.8l26.417 26.418c1.225 1.225 1.225 3.212 0 4.437s-3.21 1.225-4.437 0l-26.418-26.42L5.784 62.653c-1.225 1.225-3.212 1.225-4.437 0s-1.225-3.212 0-4.437l26.418-26.418L1.347 5.38C.122 4.154.122 2.168 1.347.943s3.212-1.225 4.437 0L32.202 27.36z"/></svg></a></span><span class="assetup--placeholderProgress"></span><span class="assetup--placeholderError"></span></li>'
 	};
 
 	var constructor = function(options) {
@@ -117,7 +118,7 @@ var AssetUp = (function() {
 		// =========================================================================
 
 		var dropToUploadHandler = function(event) {
-			var upload = event.target.closest(".assetup--upload");
+			var upload = event.target.closest(".assetup--uploader");
 			if (!upload) {
 				return;
 			}
@@ -268,8 +269,7 @@ var AssetUp = (function() {
 					}
 				};
 				updateUploadProgress(qid, '0%');
-				dom.controls.before(placeholder);
-
+				dom.assets.appendChild(placeholder);
 			});
 			checkLimit();
 
@@ -403,8 +403,8 @@ var AssetUp = (function() {
 			formData.append("name", settings.name);
 			formData.append("preview", settings.preview);
 			formData.append("transform", settings.transform);
-			formData.append("enableReorder", settings.enableReorder);
-			formData.append("enableRemove", settings.enableRemove);
+			formData.append("enableReorder", settings.enableReorder ? 1 : 0);
+			formData.append("enableRemove", settings.enableRemove ? 1 : 0);
 			return formData;
 		};
 
@@ -420,7 +420,7 @@ var AssetUp = (function() {
 		};
 
 		api.getNumberOfUploadedAssets = function() {
-			return dom.assets.childElementCount - 1;
+			return dom.assets.childElementCount;
 		};
 
 		api.setGlobalError = function(error) {
@@ -435,6 +435,7 @@ var AssetUp = (function() {
 		};
 
 		api.removeAsset = function(asset) {
+
 			asset = asset || null;
 			if (asset) {
 				asset.remove();

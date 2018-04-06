@@ -3,6 +3,7 @@
 {% set asset = asset ?? false %}
 {% set name = name ?? false %}
 {% set transform = transform ?? false %}
+{% set enableRemove = enableRemove ?? false %}
 
 {% if asset %}
 
@@ -30,45 +31,38 @@
 
     <li class="{{ classes }}"{{ attributes|raw }}>
 
-        {% if enableRemove %}
-            <a class="assetup--remove">
-                {# Remove #}
+        <span class="assetup--icon">
+            {% switch preview %}
 
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-                  <title>close-svg</title>
-                  <path d="M32.202 27.36L58.62.944c1.226-1.225 3.212-1.225 4.437 0s1.225 3.21 0 4.437L36.64 31.8l26.417 26.418c1.225 1.225 1.225 3.212 0 4.437s-3.21 1.225-4.437 0l-26.418-26.42L5.784 62.653c-1.225 1.225-3.212 1.225-4.437 0s-1.225-3.212 0-4.437l26.418-26.418L1.347 5.38C.122 4.154.122 2.168 1.347.943s3.212-1.225 4.437 0L32.202 27.36z"/>
-                </svg>
-            </a>
-        {% endif %}
+                {% case "file" %}
 
-        {# Handle
-            TODO: Hook up drag handle
-            {% if enableReorder %}
-                <span class="assetup--handle"></span>
-            {% endif %}
+                    <svg class="assetup--fileIcon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" version="1.1" height="64" viewBox="0 0 64 64" enable-background="new 0 0 64 64">
+                      <g>
+                        <path fill="#1D1D1B" d="m7.119,58.267c0,2.249 0.887,3.562 1.632,4.269 1.358,1.288 3.058,1.388 3.508,1.388 0.058,0 0.095-0.002 0.106-0.003h38.836c2.043,0 3.309-0.841 4.011-1.547 1.613-1.625 1.645-3.871 1.643-4.106v-45.245c0-0.265-0.054-0.527-0.156-0.775-0.104-0.249-0.252-0.474-0.44-0.661l-10.991-10.991c-0.188-0.188-0.413-0.337-0.662-0.44-0.248-0.103-0.512-0.156-0.774-0.156h-31.467c-2.036,0-3.246,0.889-3.901,1.634-1.501,1.706-1.405,4.091-1.345,4.761v51.872zm35.695-54.208h0.175l9.315,9.315-7.488,.002c-0.004,0.012-0.863,0.012-1.422-0.52-0.386-0.366-0.58-0.992-0.58-1.863v-6.934zm-31.301,.255c0.056-0.063 0.224-0.256 0.853-0.256h26.39v6.936c0,2.524 1.001,4.006 1.84,4.805 1.598,1.52 3.64,1.638 4.191,1.638 0.068,0 0.114-0.002 0.132-0.003h7.877v40.82c-0.035,1.607-1.21,1.607-1.594,1.607l-38.942,.003c-0.006,0-0.456-0.03-0.715-0.275-0.317-0.301-0.364-0.958-0.364-1.322v-51.976c0-0.087-0.006-0.174-0.017-0.26-0.044-0.339-0.007-1.313 0.349-1.717z"/>
+                      </g>
+                    </svg>
+                    <span class="assetup--filename">{{ asset.filename }}</span>
 
-        #}
-
-        {% switch preview %}
-
-            {% case "file" %}
-                {{ macros.icon({ icon: 'file' }) }}
-                {{ asset.filename }}
-
-            {% case "image" %}
-                <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
-                {{ asset.filename }}
-
-            {% case "background" %}
-                 <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
-                {{ asset.filename }}
+                {% case "image" %}
+                    <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
+                    <span class="assetup--filename">{{ asset.filename }}</span>
 
 
-        {% endswitch %}
+                {% case "background" %}
+                    <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
+                    <span class="assetup--filename">{{ asset.filename }}</span>
+            {% endswitch %}
+
+        </span>
+
 
         {% if name %}
             {% set name = name|replace({'[]': ''}) ~ '[]' %}
             <input type="hidden" name="{{ name }}" value="{{ asset.id }}">
+        {% endif %}
+
+        {% if enableRemove %}
+            <a class="assetup--remove"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path d="M32.202 27.36L58.62.944c1.226-1.225 3.212-1.225 4.437 0s1.225 3.21 0 4.437L36.64 31.8l26.417 26.418c1.225 1.225 1.225 3.212 0 4.437s-3.21 1.225-4.437 0l-26.418-26.42L5.784 62.653c-1.225 1.225-3.212 1.225-4.437 0s-1.225-3.212 0-4.437l26.418-26.418L1.347 5.38C.122 4.154.122 2.168 1.347.943s3.212-1.225 4.437 0L32.202 27.36z"/></svg></a>
         {% endif %}
 
     </li>

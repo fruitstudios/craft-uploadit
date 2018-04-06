@@ -9,14 +9,15 @@
     padding: 0;
 }
 
-/*.assetup--assets li::after {
-    content: '';
-    display: block;
-    padding-bottom: 10%;
-}*/
-
 /* Asset */
 .assetup--asset {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    position: relative;
+    min-height: 80px;
+    overflow: hidden;
 }
 
 .assetup--reorderEnabled .assetup--asset:hover {
@@ -27,22 +28,37 @@
 .assetup--assetPreview-image {}
 .assetup--assetPreview-file {}
 
+.assetup--icon {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+.assetup--filename {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.assetup--fileIcon {
+    height: 80px;
+    width: 80px;
+    margin-right: 8px;
+}
+
 .assetup--asset img {
-    max-height: 100%;
+    width: 80px;
+    height: 80px;
+    margin-right: 8px;
 }
 
 .assetup--remove {
-    position: absolute;
-    right: 0;
-    top: 0;
-    margin: 4px;
-    padding: 4px;
+    margin: 8px;
+    padding: 8px;
     cursor: pointer;
     z-index: 100;
-
     display: flex;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.8);
 }
 
 .assetup--remove svg {
@@ -71,22 +87,29 @@
 
 /* Asset Placeholder */
 .assetup--placeholder {
-    border: dashed 2px lightgrey;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
     position: relative;
-    z-index: 80
+    min-height: 80px;
+    overflow: hidden;
 }
 .assetup--placeholderCancel {
-    position: absolute;
-    z-index: 90;
-    right: 0;
+    margin: 8px;
+    cursor: pointer;
+    order: 3;
 }
 .assetup--placeholderProgress {
-    color: green;
     z-index: 90;
+    order: 1;
+    margin: 8px;
 }
 .assetup--placeholderError {
     color: red;
     z-index: 90;
+    order: 2;
+    margin: 8px;
 }
 
 .assetup--asset img {
@@ -95,9 +118,8 @@
 
 /* Controls */
 .assetup--controls {
-    width: auto;
+    width: 100%;
     display: inline-block;
-    border: 2px dashed lightgrey;
     padding: 24px;
 }
 
@@ -112,7 +134,7 @@
 }
 .assetup--label {
     display: inline-block;
-    padding: 8px 16px;
+    padding: 12px 20px;
     color: white;
     background-color: #000000;
 }
@@ -135,7 +157,7 @@
 }
 
 .assetup--isDragging {
-    background: #f9f9f9;
+    opacity: 0.5;
 }
 
 
@@ -194,21 +216,4 @@
 .assetup--preload {
     display: none;
     visibility: hidden;
-}
-.assetup--layout-list .assetup--asset {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    position: relative;
-}
-.assetup--layout-list .assetup--placeholder {
-    min-height: 56px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
-.assetup--layout-list .assetup--asset img {
-    width: 40px;
-    height: 40px;
-    margin-right: 8px;
 }

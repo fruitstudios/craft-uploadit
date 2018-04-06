@@ -173,18 +173,24 @@ class Uploader extends Model
 
                 $this->limit = (int) ($this->_field->limit ? $this->_field->limit : null);
                 $this->allowedFileExtensions = AssetUpHelper::getAllowedFileExtensionsByFieldKinds($this->_field->allowedKinds);
+
+                if(!$this->name)
+                {
+                    $this->name = 'fields['.$this->_field->handle.']';
+                }
+
+                $this->enableReorder = true;
+                $this->enableRemove = true;
+
                 break;
 
             case self::TARGET_FOLDER:
-
+                $this->enableReorder = false;
+                $this->enableRemove = false;
                 break;
         }
 
-        if(!$this->name)
-        {
-            $this->enableReorder = false;
-            $this->enableRemove = false;
-        }
+
 
         return parent::afterValidate();
     }
