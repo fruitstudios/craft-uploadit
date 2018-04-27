@@ -1,6 +1,6 @@
 <?php
 /**
- * Asset Up plugin for Craft CMS 3.x
+ * Uploadit plugin for Craft CMS 3.x
  *
  * Front end asset upload tools for Craft CMS
  *
@@ -8,10 +8,10 @@
  * @copyright Copyright (c) 2018 Fruit Studios
  */
 
-namespace fruitstudios\assetup;
+namespace fruitstudios\uploadit;
 
-use fruitstudios\assetup\services\AssetUpService;
-use fruitstudios\assetup\variables\AssetUpVariable;
+use fruitstudios\uploadit\services\UploaditService;
+use fruitstudios\uploadit\variables\UploaditVariable;
 
 use Craft;
 use craft\base\Plugin;
@@ -24,21 +24,21 @@ use craft\events\RegisterUrlRulesEvent;
 use yii\base\Event;
 
 /**
- * Class AssetUp
+ * Class Uploadit
  *
  * @author    Fruit Studios
- * @package   AssetUp
+ * @package   Uploadit
  * @since     1.0.0
  *
- * @property  AssetUpServiceService $assetUploaderService
+ * @property  UploaditServiceService $uploaditloaderService
  */
-class AssetUp extends Plugin
+class Uploadit extends Plugin
 {
     // Static Properties
     // =========================================================================
 
     /**
-     * @var AssetUp
+     * @var Uploadit
      */
     public static $plugin;
 
@@ -62,14 +62,14 @@ class AssetUp extends Plugin
         self::$plugin = $this;
 
         $this->setComponents([
-            'service' => AssetUpService::class,
+            'service' => UploaditService::class,
         ]);
 
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['siteActionTrigger1'] = 'assetup/default';
+                $event->rules['siteActionTrigger1'] = 'uploadit/default';
             }
         );
 
@@ -79,13 +79,13 @@ class AssetUp extends Plugin
             function (Event $event) {
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
-                $variable->set('assetUp', AssetUpVariable::class);
+                $variable->set('uploadit', UploaditVariable::class);
             }
         );
 
         Craft::info(
             Craft::t(
-                'assetup',
+                'uploadit',
                 '{name} plugin loaded',
                 ['name' => $this->name]
             ),

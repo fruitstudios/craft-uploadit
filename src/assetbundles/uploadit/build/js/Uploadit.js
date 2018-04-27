@@ -1,23 +1,24 @@
-var assetups = {};
+var uploadits = {};
 
-var AssetUp = (function() {
+var Uploadit = (function() {
 	"use strict";
 
 	var defaults = {
 		debug: false,
 		sortable: {
 			animation: 150,
-			// handle: ".assetup--handle",
-			draggable: ".assetup--asset",
-			dragClass: "assetup--assetDragging",
-			ghostClass: "assetup--assetGhost",
-			chosenClass: "assetup--assetChosen",
-			filter: ".assetup--controls, .assetup--remove",
+			// handle: ".uploadit--handle",
+			draggable: ".uploadit--asset",
+			dragClass: "uploadit--assetDragging",
+			ghostClass: "uploadit--assetGhost",
+			chosenClass: "uploadit--assetChosen",
+			filter: ".uploadit--controls, .uploadit--remove",
 		},
 		layout: "grid",
 		preview: "image",
 		csrfTokenName: "",
 		csrfTokenValue: "",
+		type: false,
 		name: false,
 		transform: "",
 		enableReorder: true,
@@ -29,8 +30,8 @@ var AssetUp = (function() {
 	};
 
 	var templates = {
-		// placeholder: '<li class="assetup--placeholder assetup--isLoading"><span class="assetup--placeholderCancel">Cancel</span><span class="assetup--placeholderProgress"></span><span class="assetup--placeholderError"></span></li>'
-		placeholder: '<li class="assetup--placeholder assetup--isLoading"><span class="assetup--placeholderCancel"><a class="assetup--remove"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path d="M32.202 27.36L58.62.944c1.226-1.225 3.212-1.225 4.437 0s1.225 3.21 0 4.437L36.64 31.8l26.417 26.418c1.225 1.225 1.225 3.212 0 4.437s-3.21 1.225-4.437 0l-26.418-26.42L5.784 62.653c-1.225 1.225-3.212 1.225-4.437 0s-1.225-3.212 0-4.437l26.418-26.418L1.347 5.38C.122 4.154.122 2.168 1.347.943s3.212-1.225 4.437 0L32.202 27.36z"/></svg></a></span><span class="assetup--placeholderProgress"></span><span class="assetup--placeholderError"></span></li>'
+		// placeholder: '<li class="uploadit--placeholder uploadit--isLoading"><span class="uploadit--placeholderCancel">Cancel</span><span class="uploadit--placeholderProgress"></span><span class="uploadit--placeholderError"></span></li>'
+		placeholder: '<li class="uploadit--placeholder uploadit--isLoading"><span class="uploadit--placeholderCancel"><a class="uploadit--remove"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path d="M32.202 27.36L58.62.944c1.226-1.225 3.212-1.225 4.437 0s1.225 3.21 0 4.437L36.64 31.8l26.417 26.418c1.225 1.225 1.225 3.212 0 4.437s-3.21 1.225-4.437 0l-26.418-26.42L5.784 62.653c-1.225 1.225-3.212 1.225-4.437 0s-1.225-3.212 0-4.437l26.418-26.418L1.347 5.38C.122 4.154.122 2.168 1.347.943s3.212-1.225 4.437 0L32.202 27.36z"/></svg></a></span><span class="uploadit--placeholderProgress"></span><span class="uploadit--placeholderError"></span></li>'
 	};
 
 	var constructor = function(options) {
@@ -59,11 +60,7 @@ var AssetUp = (function() {
 		var initDropToUpload = function() {
 			if (settings.enableDropToUpload) {
 				["dragover", "dragenter", "dragleave", "drop"].forEach(name => {
-					dom.uploader.addEventListener(
-						name,
-						dropToUploadHandler,
-						false
-					);
+					dom.uploader.addEventListener(name, dropToUploadHandler, false);
 				});
 			}
 		};
@@ -76,11 +73,7 @@ var AssetUp = (function() {
 
 		var initRemoveAssets = function() {
 			if (settings.enableRemove) {
-				dom.uploader.addEventListener(
-					"click",
-					removeAssetHandler,
-					false
-				);
+				dom.uploader.addEventListener("click", removeAssetHandler, false);
 			}
 		};
 
@@ -89,11 +82,7 @@ var AssetUp = (function() {
 			var encoded = [];
 			for (var prop in obj) {
 				if (obj.hasOwnProperty(prop)) {
-					encoded.push(
-						encodeURIComponent(prop) +
-							"=" +
-							encodeURIComponent(obj[prop])
-					);
+					encoded.push(encodeURIComponent(prop) + "=" + encodeURIComponent(obj[prop]));
 				}
 			}
 			return encoded.join("&");
@@ -108,9 +97,9 @@ var AssetUp = (function() {
 		var checkLimit = function() {
 			var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
 			if (settings.limit && numberOfUploadedAssets >= settings.limit) {
-				dom.controls.classList.add("assetup--isHidden");
+				dom.controls.classList.add("uploadit--isHidden");
 			} else {
-				dom.controls.classList.remove("assetup--isHidden");
+				dom.controls.classList.remove("uploadit--isHidden");
 			}
 		};
 
@@ -118,7 +107,7 @@ var AssetUp = (function() {
 		// =========================================================================
 
 		var dropToUploadHandler = function(event) {
-			var upload = event.target.closest(".assetup--uploader");
+			var upload = event.target.closest(".uploadit--uploader");
 			if (!upload) {
 				return;
 			}
@@ -128,15 +117,15 @@ var AssetUp = (function() {
 			switch (event.type) {
 				case "dragenter":
 				case "dragover":
-					upload.classList.add("assetup--isDragging");
+					upload.classList.add("uploadit--isDragging");
 					break;
 
 				case "dragleave":
-					upload.classList.remove("assetup--isDragging");
+					upload.classList.remove("uploadit--isDragging");
 					break;
 
 				case "drop":
-					upload.classList.remove("assetup--isDragging");
+					upload.classList.remove("uploadit--isDragging");
 					var assets = event.dataTransfer.files;
 					if (!assets) {
 						api.setGlobalError("Drop Error");
@@ -148,7 +137,7 @@ var AssetUp = (function() {
 		};
 
 		var removeAssetHandler = function(event) {
-			var asset = event.target.closest(".assetup--asset");
+			var asset = event.target.closest(".uploadit--asset");
 			if (!asset) {
 				return;
 			}
@@ -159,7 +148,7 @@ var AssetUp = (function() {
 		};
 
 		var uploadAssetHandler = function(event) {
-			if (!event.target.closest(".assetup--upload")) {
+			if (!event.target.closest(".uploadit--upload")) {
 				return;
 			}
 			event.preventDefault();
@@ -167,7 +156,7 @@ var AssetUp = (function() {
 		};
 
 		var assetInputHandler = function(event) {
-			if (!event.target.closest('[name="assetUpAssetInput"]')) {
+			if (!event.target.closest('[name="uploaditAssetInput"]')) {
 				return;
 			}
 			event.preventDefault();
@@ -175,11 +164,11 @@ var AssetUp = (function() {
 		};
 
 		var cancelUploadHandler = function(event) {
-			if (!event.target.closest('.assetup--placeholderCancel')) {
+			if (!event.target.closest('.uploadit--placeholderCancel')) {
 				return;
 			}
 			event.preventDefault();
-			var placeholder = event.target.closest('.assetup--placeholder');
+			var placeholder = event.target.closest('.uploadit--placeholder');
 			cancelUpload(placeholder.getAttribute('data-qid'));
 		};
 
@@ -211,7 +200,7 @@ var AssetUp = (function() {
 		};
 
 		var setUploadError = function(qid, error) {
-			queue[qid].dom.placeholder.classList.remove('assetup--isLoading');
+			queue[qid].dom.placeholder.classList.remove('uploadit--isLoading');
 			queue[qid].dom.error.textContent = error;
 		};
 
@@ -248,7 +237,7 @@ var AssetUp = (function() {
 			}
 
 			// Assets
-			assets = [...assets];
+			assets = Array.from(assets);
 
 			// Queue & Placeholder
 			assets.forEach(function(asset, i) {
@@ -264,8 +253,8 @@ var AssetUp = (function() {
 					xhr: null,
 					dom: {
 						placeholder: placeholder,
-						error: placeholder.querySelector('.assetup--placeholderError'),
-						progress: placeholder.querySelector('.assetup--placeholderProgress'),
+						error: placeholder.querySelector('.uploadit--placeholderError'),
+						progress: placeholder.querySelector('.uploadit--placeholderProgress'),
 					}
 				};
 				updateUploadProgress(qid, '0%');
@@ -375,7 +364,7 @@ var AssetUp = (function() {
 
 			xhr.responseType = "json";
 			var formData = new FormData();
-			formData.append("action", "assetup/upload/can-upload");
+			formData.append("action", "uploadit/upload/can-upload");
 			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
 			xhr.send(formData);
 		};
@@ -388,9 +377,9 @@ var AssetUp = (function() {
 
 		var getAssetFormData = function(asset) {
 			var formData = new FormData();
-			formData.append("action", "assetup/upload");
+			formData.append("action", "uploadit/upload");
 			formData.append("assets-upload", asset);
-			switch (settings.target.type) {
+			switch (settings.type) {
 				case "field":
 					formData.append("elementId", settings.target.elementId);
 					formData.append("fieldId", settings.target.fieldId);
@@ -410,7 +399,7 @@ var AssetUp = (function() {
 
 		var preloadImage = function(url, success) {
 
-	        var image = htmlToElement('<img style="display:none !important;" class="assetup--isHidden" src="'+url+'">');
+	        var image = htmlToElement('<img style="display:none !important;" class="uploadit--isHidden" src="'+url+'">');
 			image.addEventListener('load', function() {
 				image.remove();
 	        	success();
@@ -427,10 +416,10 @@ var AssetUp = (function() {
 			error = error || false;
 			if (error) {
 				dom.errors.textContent = error;
-				dom.errors.classList.remove("assetup--isHidden");
+				dom.errors.classList.remove("uploadit--isHidden");
 			} else {
 				dom.errors.textContent = "";
-				dom.errors.classList.add("assetup--isHidden");
+				dom.errors.classList.add("uploadit--isHidden");
 			}
 		};
 
@@ -456,13 +445,13 @@ var AssetUp = (function() {
 
 			// Elements
 			dom.uploader = document.getElementById(settings.id);
-			dom.assets = dom.uploader.querySelector(".assetup--assets");
-			dom.controls = dom.uploader.querySelector(".assetup--controls");
+			dom.assets = dom.uploader.querySelector(".uploadit--assets");
+			dom.controls = dom.uploader.querySelector(".uploadit--controls");
 			dom.input = dom.uploader.querySelector(
-				'[name="assetUpAssetInput"]'
+				'[name="uploaditAssetInput"]'
 			);
-			dom.errors = dom.uploader.querySelector(".assetup--errors");
-			dom.preload = dom.uploader.querySelector(".assetup--preload");
+			dom.errors = dom.uploader.querySelector(".uploadit--errors");
+			dom.preload = dom.uploader.querySelector(".uploadit--preload");
 
 			// Reorder
 			initReorderAssets();

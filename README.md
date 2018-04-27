@@ -1,4 +1,4 @@
-# Asset Up plugin for Craft CMS 3.x
+# Uploadit plugin for Craft CMS 3.x
 
 The unausuming front end asset uploader for Craft 3.
 Use as a standalone uploader or as field in one of your forms:
@@ -21,15 +21,15 @@ To install the plugin, follow these steps:
 
 1.  Install with Composer via:
 
-        composer require fruitstudios/assetup
+        composer require fruitstudios/uploadit
 
-2.  In the Control Panel, go to Settings → Plugins and click the “Install” button for Asset Up.
+2.  In the Control Panel, go to Settings → Plugins and click the “Install” button for Uploadit.
 
-## Using AssetUp
+## Using Uploadit
 
 **Options**
 
-    {{ craft.assetUp.uploader({
+    {{ craft.uploadit.uploader({
     	id: 'myUid',
     	name: 'myFieldName',
         assets: [],
@@ -124,7 +124,7 @@ You can also define whether lists can give away, give and keep a copy (`clone`),
 
 **Example Standalone Usage**
 
-    {{ craft.assetUp.uploader({
+    {{ craft.uploadit.uploader({
     	id: 'myUid',
     	name: 'myFieldName',
     	assets: [],
@@ -139,7 +139,7 @@ You can also define whether lists can give away, give and keep a copy (`clone`),
 
 **Example Form Usage**
 
-    {{ craft.assetUp.uploader({
+    {{ craft.uploadit.uploader({
     	id: 'myUid',
     	name: 'myFieldName',
         assets: [],

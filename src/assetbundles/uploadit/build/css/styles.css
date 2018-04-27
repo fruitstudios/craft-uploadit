@@ -1,16 +1,16 @@
 /* Uploader */
 
-.assetup--uploader {
+.uploadit--uploader {
     position: relative;
 }
 
-.assetup--assets {
+.uploadit--assets {
     list-style-type: none;
     padding: 0;
 }
 
 /* Asset */
-.assetup--asset {
+.uploadit--asset {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -20,39 +20,42 @@
     overflow: hidden;
 }
 
-.assetup--reorderEnabled .assetup--asset:hover {
+.uploadit--reorderEnabled .uploadit--asset:hover {
     cursor: all-scroll;
 }
 
-.assetup--assetPreview-background {}
-.assetup--assetPreview-image {}
-.assetup--assetPreview-file {}
+.uploadit--assetPreview-background {
+}
+.uploadit--assetPreview-image {
+}
+.uploadit--assetPreview-file {
+}
 
-.assetup--icon {
+.uploadit--icon {
     display: flex;
     align-items: center;
     font-size: 13px;
 }
 
-.assetup--filename {
+.uploadit--filename {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.assetup--fileIcon {
+.uploadit--fileIcon {
     height: 80px;
     width: 80px;
     margin-right: 8px;
 }
 
-.assetup--asset img {
+.uploadit--asset img {
     width: 80px;
     height: 80px;
     margin-right: 8px;
 }
 
-.assetup--remove {
+.uploadit--remove {
     margin: 8px;
     padding: 8px;
     cursor: pointer;
@@ -61,12 +64,12 @@
     align-items: center;
 }
 
-.assetup--remove svg {
+.uploadit--remove svg {
     width: 16px;
     height: 16px;
 }
 
-.assetup--handle {
+.uploadit--handle {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -77,16 +80,17 @@
     z-index: 99;
 }
 
-.assetup--assetDragging {}
-.assetup--assetChosen {
+.uploadit--assetDragging {
+}
+.uploadit--assetChosen {
     opacity: 0.5;
 }
-.assetup--assetGhost {
+.uploadit--assetGhost {
     opacity: 1;
 }
 
 /* Asset Placeholder */
-.assetup--placeholder {
+.uploadit--placeholder {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -95,35 +99,35 @@
     min-height: 80px;
     overflow: hidden;
 }
-.assetup--placeholderCancel {
+.uploadit--placeholderCancel {
     margin: 8px;
     cursor: pointer;
     order: 3;
 }
-.assetup--placeholderProgress {
+.uploadit--placeholderProgress {
     z-index: 90;
     order: 1;
     margin: 8px;
 }
-.assetup--placeholderError {
+.uploadit--placeholderError {
     color: red;
     z-index: 90;
     order: 2;
     margin: 8px;
 }
 
-.assetup--asset img {
+.uploadit--asset img {
     display: block;
 }
 
 /* Controls */
-.assetup--controls {
+.uploadit--controls {
     width: 100%;
     display: inline-block;
     padding: 24px;
 }
 
-.assetup--upload {
+.uploadit--upload {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -132,34 +136,35 @@
     text-decoration: none;
     color: #000000;
 }
-.assetup--label {
+.uploadit--label {
     display: inline-block;
     padding: 12px 20px;
     color: white;
     background-color: #000000;
 }
-.assetup--or {}
-.assetup--btn {}
+.uploadit--or {
+}
+.uploadit--btn {
+}
 
 /* Errors */
-.assetup--errors {
+.uploadit--errors {
     color: red;
 }
 
 /* Progress */
-.assetup--progress {
+.uploadit--progress {
     display: none;
 }
 
 /* Utilities */
-.assetup--isHidden {
+.uploadit--isHidden {
     display: none !important;
 }
 
-.assetup--isDragging {
+.uploadit--isDragging {
     opacity: 0.5;
 }
-
 
 @keyframes loading {
     0% {
@@ -170,18 +175,18 @@
     }
 }
 
-.assetup--isLoading:before {
-    content: '';
+.uploadit--isLoading:before {
+    content: "";
     background: rgba(255, 255, 255, 0.8);
     position: absolute;
-    top:0;
-    left:0;
-    right:0;
+    top: 0;
+    left: 0;
+    right: 0;
     bottom: 0;
 }
 
-.assetup--isLoading:after {
-    content: '';
+.uploadit--isLoading:after {
+    content: "";
     box-sizing: border-box;
     position: absolute;
     top: 50%;
@@ -193,19 +198,18 @@
     border-radius: 50%;
     border: 3px solid #000000;
     border-top-color: transparent !important;
-    animation: loading .7s linear infinite;
+    animation: loading 0.7s linear infinite;
 }
 
-
 /* Notice */
-.assetup--notice {
-    border:1px solid #333;
-    background:#f3f3f3;
-    border-radius:5px;
+.uploadit--notice {
+    border: 1px solid #333;
+    background: #f3f3f3;
+    border-radius: 5px;
     padding: 20px;
 }
 
-.assetup--noticeErrors {
+.uploadit--noticeErrors {
     list-style: none;
     color: orange;
     padding: 0;
@@ -213,7 +217,7 @@
 }
 
 /* Preload */
-.assetup--preload {
+.uploadit--preload {
     display: none;
     visibility: hidden;
 }

@@ -1,20 +1,22 @@
 {
-    "name": "fruitstudios/assetup",
+    "name": "fruitstudios/uploadit",
     "description": "Front end asset upload tools for Craft CMS",
     "type": "craft-plugin",
-    "version": "1.0.0-beta.2",
+    "version": "1.0.0",
     "keywords": [
         "craft",
         "cms",
         "craftcms",
         "craft-plugin",
-        "asset uploader"
+        "asset uploader",
+        "front end",
+        "uploadit"
     ],
     "support": {
-        "docs": "https://github.com/fruitstudios/assetup/blob/master/README.md",
-        "issues": "https://github.com/fruitstudios/assetup/issues"
+        "docs": "https://github.com/fruitstudios/craft-uploadit/blob/master/README.md",
+        "issues": "https://github.com/fruitstudios/craft-uploadit/issues"
     },
-    "license": "MIT",
+    "license": "proprietary",
     "authors": [
         {
             "name": "Fruit Studios",
@@ -22,22 +24,22 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0-RC1"
+        "craftcms/cms": "^3.0.2"
     },
     "autoload": {
         "psr-4": {
-          "fruitstudios\\assetup\\": "src/"
+          "fruitstudios\\uploadit\\": "src/"
         }
     },
     "extra": {
-        "name": "Asset Up",
-        "handle": "assetup",
+        "name": "Uploadit",
+        "handle": "uploadit",
         "hasCpSettings": false,
         "hasCpSection": false,
-        "changelogUrl": "https://raw.githubusercontent.com/fruitstudios/assetup/master/CHANGELOG.md",
+        "changelogUrl": "https://raw.githubusercontent.com/fruitstudios/craft-uploadit/master/CHANGELOG.md",
+        "class": "fruitstudios\\uploadit\\Uploadit",
         "components": {
-            "assetUploaderService": "fruitstudios\\assetup\\services\\AssetUpService"
-        },
-        "class": "fruitstudios\\assetup\\AssetUp"
+            "uploadit": "fruitstudios\\uploadit\\services\\UploaditService"
+        }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace fruitstudios\assetup\helpers;
+namespace fruitstudios\uploadit\helpers;
 
 use Craft;
 use craft\web\View;
@@ -8,7 +8,7 @@ use craft\db\Query;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets as AssetsHelper;
 
-class AssetUpHelper
+class UploaditHelper
 {
     // Template
     // =========================================================================

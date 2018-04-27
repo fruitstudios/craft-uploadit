@@ -1,13 +1,13 @@
-{% import "assetup/_macros" as macros %}
+{% import "uploadit/_macros" as macros %}
 
 {% set uploader = uploader ?? false %}
 
 {% if uploader and not uploader.hasErrors() %}
 
     {% set classes = [
-        'assetup--uploader',
-        'assetup--layout-' ~ uploader.layout,
-        uploader.enableReorder ? 'assetup--reorderEnabled' : null,
+        'uploadit--uploader',
+        'uploadit--layout-' ~ uploader.layout,
+        uploader.enableReorder ? 'uploadit--reorderEnabled' : null,
         uploader.customClass ? uploader.customClass : null,
     ]|filter|join(' ') %}
 
@@ -15,13 +15,13 @@
 
     <div id="{{ uploader.id }}" class="{{ classes }}">
 
-        <div class="assetup--errors assetup--isHidden"></div>
+        <div class="uploadit--errors uploadit--isHidden"></div>
 
         {% if uploader.name %}
             <input type="hidden" name="{{ uploader.name|replace({'[]': ''}) }}" value="" />
         {% endif %}
 
-        <ul id="{{ uploader.id }}Assets" class="assetup--assets">
+        <ul id="{{ uploader.id }}Assets" class="uploadit--assets">
 
             {% for asset in uploader.assets %}
 
@@ -38,140 +38,41 @@
 
         </ul>
 
-        <div class="assetup--controls{{ uploader.limit and uploader.assets|length >= uploader.limit ? ' assetup--isHidden' }}">
+        <div class="uploadit--controls{{ uploader.limit and uploader.assets|length >= uploader.limit ? ' uploadit--isHidden' }}">
 
-                <div class="assetup--controls-inner">
+                <div class="uploadit--controls-inner">
 
-                    <a href="javascript:;" class="assetup--upload">
+                    <a href="javascript:;" class="uploadit--upload">
                        {#  {{ macros.icon({ icon: 'upload' }) }} #}
-                        <span class="assetup--label">{{ uploader.selectText }}</span>
+                        <span class="uploadit--label">{{ uploader.selectText }}</span>
                         {# {% if uploader.enableDropToUpload %}
-                            <span class="assetup--or">{{ 'or'|t('assetup') }}</span>
-                            <span class="assetup--btn">{{ uploader.dropText }}</span>
+                            <span class="uploadit--or">{{ 'or'|t('uploadit') }}</span>
+                            <span class="uploadit--btn">{{ uploader.dropText }}</span>
                         {% endif %} #}
                     </a>
 
-                    <input type="file" name="assetUpAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />
+                    <input type="file" name="uploaditAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />
 
                 </div>
             </div>
 
-        <div class="assetup--preload assetup--isHidden"></div>
+        <div class="uploadit--preload uploadit--isHidden"></div>
 
     </div>
 
 {% else %}
 
-    <div class="assetup--notice">
+    <div class="uploadit--notice">
         {% if uploader.hasErrors() %}
-            <p>{{ 'Uploader Not Ready'|t('assetup') }}</p>
-            <ul class="assetup--noticeErrors">
+            <p>{{ 'Uploader Not Ready'|t('uploadit') }}</p>
+            <ul class="uploadit--noticeErrors">
                 {% for error in uploader.getErrors() %}
                     <li>{{ error|filter|join(', ') }}</li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p>{{ 'Uploader Not Found'|t('assetup') }}</p>
+            <p>{{ 'Uploader Not Found'|t('uploadit') }}</p>
         {% endif %}
     </div>
 
 {% endif %}
-
-
-
-
-
-
-{#
-{% set types = ['files', 'images'] %}
-{% set type = type ?? types[0] %}
-
-{% set source = source ?? '' %}
-{% set folder = folder ?? '' %}
-{% set elementId = elementId ?? '' %}
-{% set fieldId = fieldId ?? '' %}
-
-{% set views = ['image', 'background', 'file'] %}
-{% set view = view ?? views[0] %}
-{% set transform = transform ?? 'defaultAssetUpload' %}
-
-{% set name = name ?? false %}
-{% set asset = asset ?? false %}
-{% set title = title ?? 'Upload Asset' %}
-{% set subTitle = subTitle ?? false %}
-{% set icon = icon ?? 'file-up' %}
-{% set allowDelete = allowDelete ?? false %}
-{% set square = square ?? false %}
-
-{% set classes = [
-    'asset-field',
-    'asset-field--view-'~view,
-    (inputClass ?? null),
-    ( asset ? 'has-asset' : null ),
-    'js-assetField'
-]|filter|join(' ') %}
-
-<div class="{{ classes }}">
-
-    {% if allowDelete %}
-        <span class="asset-field--delete js-assetFieldDelete">
-            {{ macros.icon('close') }}
-        </span>
-    {% endif %}
-
-    <div class="asset-field--preview js-assetFieldPreview">
-
-        {% switch view %}
-
-            {% case 'background' %}
-
-                <div class="asset-field--assetPreview image--margin js-assetPreview" style="background-image: url( '{{ asset ? asset.url(transform) }}' );" data-view="{{ view }}"></div>
-
-            {% case 'image' %}
-
-                <div class="asset-field--assetPreview js-assetPreview" data-view="{{ view }}">
-                    <img src="{{ asset ? asset.url(transform) }}" />
-                </div>
-
-            {% case 'file' %}
-
-                <div class="asset-field--assetPreview js-assetPreview" data-view="{{ view }}">
-                    {{ macros.icon('file')}}
-                    <p class="asset-field--assetFilename js-assetFilename">{{ asset.filename ?? '' }}</p>
-                </div>
-
-        {% endswitch %}
-
-    </div>
-
-    <div class="asset-field--action js-assetFieldAction">
-
-        <a href="javascript:;" class="placeholder{{ square ? ' placeholder--square' : '' }} js-uploadAsset">
-            <div class="placeholder-inner">
-                {% if icon %}
-                    {{ macros.icon(icon) }}
-                {% endif %}
-                <p class="placeholder-title">{{ title ?? '' }}</p>
-                {% if subTitle ?? false %}<p class="placeholder-subtitle">{{ subTitle }}</p>{% endif %}
-                <p class="or">or</p>
-                <span class="btn btn--secondary">Browse files</span>
-            </div>
-        </a>
-        <input type="file" name="assetInput" style="display:none;"
-            data-element-id="{{ elementId }}"
-            data-field-id="{{ fieldId }}"
-            data-folder="{{ folder }}"
-            data-source="{{ source }}"
-            data-transform="{{ transform }}" >
-
-    </div>
-
-    {{ macros.text({
-        inputClass: 'asset-field--input js-assetInput',
-        name: name ? name|replace({'[]': ''})~(asset ? '[]'),
-        type: 'hidden',
-        value: asset.id ?? ''
-    }) }}
-
-</div>
- #}

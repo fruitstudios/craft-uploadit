@@ -1,8 +1,8 @@
 <?php
-namespace fruitstudios\assetup\controllers;
+namespace fruitstudios\uploadit\controllers;
 
-use fruitstudios\assetup\AssetUp;
-use fruitstudios\assetup\helpers\AssetUpHelper;
+use fruitstudios\uploadit\Uploadit;
+use fruitstudios\uploadit\helpers\UploaditHelper;
 
 use Craft;
 use craft\web\Controller;
@@ -34,7 +34,7 @@ class UploadController extends Controller
         $asset = Craft::$app->getAssets()->getAssetById($response->data['assetId']);
         if(!$asset)
         {
-            return $this->asErrorJson(Craft::t('assetup', 'Could not get uploaded asset.'));
+            return $this->asErrorJson(Craft::t('uploadit', 'Could not get uploaded asset.'));
         }
 
         // Settings
@@ -46,7 +46,7 @@ class UploadController extends Controller
         $enableRemove = $request->getParam('enableRemove', false);
 
         // Preview
-        $html = AssetUpHelper::renderTemplate('assetup/_macros/_preview', [
+        $html = UploaditHelper::renderTemplate('uploadit/_macros/_preview', [
             'asset' => $asset,
             'name' => $name,
             'view' => $view,
@@ -71,14 +71,14 @@ class UploadController extends Controller
         $currentUser = Craft::$app->getUser()->getIdentity();
         if(!$currentUser)
         {
-            return $this->asErrorJson(Craft::t('assetup', 'Only logged in users can upload assets.'));
+            return $this->asErrorJson(Craft::t('uploadit', 'Only logged in users can upload assets.'));
         }
 
         // TODO: this probably needs to happen else where, based on the specific volume permissions
         //
         // if (!Craft::$app->getUser()->checkPermission('deleteUsers'))
         // {
-        //     return $this->asErrorJson(Craft::t('assetup', 'You don\'t have permission to upload assets.'));
+        //     return $this->asErrorJson(Craft::t('uploadit', 'You don\'t have permission to upload assets.'));
         // }
 
         return $this->asJson([

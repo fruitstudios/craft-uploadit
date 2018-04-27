@@ -1,13 +1,13 @@
 <?php
-namespace fruitstudios\assetup\services;
+namespace fruitstudios\uploadit\services;
 
-use fruitstudios\assetup\AssetUp;
-use fruitstudios\assetup\helpers\AssetUpHelper;
+use fruitstudios\uploadit\Uploadit;
+use fruitstudios\uploadit\helpers\UploaditHelper;
 
 use Craft;
 use craft\base\Component;
 
-class AssetUpService extends Component
+class UploaditService extends Component
 {
     // Public Methods
     // =========================================================================
@@ -21,11 +21,11 @@ class AssetUpService extends Component
 
     	if(is_numeric($handleOrId))
     	{
-			$field = AssetUpHelper::getFieldById($handleOrId);
+			$field = UploaditHelper::getFieldById($handleOrId);
     	}
     	else
     	{
-    		$field = AssetUpHelper::getFieldByHandle($handleOrId);
+    		$field = UploaditHelper::getFieldByHandle($handleOrId);
     	}
     	return $field;
     }

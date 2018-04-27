@@ -1,6 +1,6 @@
 <?php
 /**
- * Asset Up plugin for Craft CMS 3.x
+ * Uploadit plugin for Craft CMS 3.x
  *
  * Front end asset upload tools for Craft CMS
  *
@@ -10,9 +10,9 @@
 
 /**
  * @author    Fruit Studios
- * @package   AssetUp
+ * @package   Uploadit
  * @since     1.0.0
  */
 return [
-    'Asset Up plugin loaded' => 'Asset Up plugin loaded',
+    'Uploadit plugin loaded' => 'Uploadit plugin loaded',
 ];
