@@ -10,7 +10,6 @@ use Craft;
 use craft\web\View;
 use craft\base\Model;
 use craft\helpers\Json as JsonHelper;
-use craft\helpers\Assets as AssetsHelper;
 
 abstract class Uploader extends Model implements UploaderInterface
 {
@@ -32,8 +31,6 @@ abstract class Uploader extends Model implements UploaderInterface
     // Private
     // =========================================================================
 
-    private $_defaultAllowedfileKinds;
-    private $_defaultMaxUploadFileSize;
     private $_defaultJavascriptVariables;
 
     // Public
@@ -70,7 +67,7 @@ abstract class Uploader extends Model implements UploaderInterface
     public $transform = '';
     public $limit;
     public $maxSize;
-    public $acceptedFileTypes;
+    public $allowedFileExtensions;
 
 
     // Public Methods
@@ -78,19 +75,19 @@ abstract class Uploader extends Model implements UploaderInterface
 
     public function __construct()
     {
-        // Defualts
-        $this->_defaultJavascriptVariables = [
-            'csrfTokenName' => Craft::$app->getConfig()->getGeneral()->csrfTokenName,
-            'csrfTokenValue' => Craft::$app->getRequest()->getCsrfToken(),
-        ];
-        $this->_defaultAllowedfileKinds = AssetsHelper::getFileKinds();
-        $this->_defaultMaxUploadFileSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
-
+        // Defualt Settings
         $this->id = uniqid('uploadit');
         $this->selectText = Craft::t('uploadit', 'Select files');
         $this->dropText = Craft::t('uploadit', 'drop files here');
-        $this->maxSize = $this->_defaultMaxUploadFileSize;
-        $this->acceptedFileTypes = $this->_defaultAllowedfileKinds;
+        $this->maxSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
+        $this->allowedFileExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+
+        // Default Javascript Variables
+        $this->_defaultJavascriptVariables = [
+            'debug' => Craft::$app->getConfig()->getGeneral()->devMode,
+            'csrfTokenName' => Craft::$app->getConfig()->getGeneral()->csrfTokenName,
+            'csrfTokenValue' => Craft::$app->getRequest()->getCsrfToken(),
+        ];
     }
 
     public function render()
@@ -109,6 +106,8 @@ abstract class Uploader extends Model implements UploaderInterface
 
     public function rules()
     {
+        // IDEA: Should target use this for validation: https://www.yiiframework.com/doc/guide/2.0/en/tutorial-core-validators#filter
+
         $rules = parent::rules();
         $rules[] = [['id'], 'required'];
         $rules[] = [['maxSize'], 'integer', 'max' => $this->_defaultMaxUploadFileSize, 'message' => Craft::t('uploadit', 'Max file cant be greater than the global setting maxUploadFileSize')];
@@ -124,14 +123,13 @@ abstract class Uploader extends Model implements UploaderInterface
     {
         return [
             'id',
-            'type',
             'target',
             'layout',
             'preview',
             'limit',
             'maxSize',
             'transform',
-            'acceptedFileTypes',
+            'allowedFileExtensions',
             'enableDropToUpload',
             'enableReorder',
             'enableRemove'
@@ -143,14 +141,13 @@ abstract class Uploader extends Model implements UploaderInterface
         return null;
     }
 
-
-
     // Private Methods
     // =========================================================================
 
     private function _getJavascriptVariables(bool $encode = true)
     {
         $settings = $this->_defaultJavascriptVariables;
+        $settings['type'] = static::type();
         foreach ($this->getJavascriptProperties() as $property)
         {
             $settings[$property] = $this->$property ?? null;
@@ -162,9 +159,9 @@ abstract class Uploader extends Model implements UploaderInterface
     private function _getCustomCss()
     {
       $css = '
-        .uploadit--isLoading:after { border-color: '.$this->themeColour.'; }
-        .uploadit--label { background-color: '.$this->themeColour.'; }
-        .uploadit--btn { color: '.$this->themeColour.'; }
+        #'.$this->id.' .uploadit--isLoading:after { border-color: '.$this->themeColour.'; }
+        #'.$this->id.' .uploadit--label { background-color: '.$this->themeColour.'; }
+        #'.$this->id.' .uploadit--btn { color: '.$this->themeColour.'; }
       ';
 
       return $css;

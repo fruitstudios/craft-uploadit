@@ -16,7 +16,7 @@ class VolumeUploader extends Uploader
 
     public static function type(): string
     {
-        return TYPE_VOLUME;
+        return self::TYPE_VOLUME;
     }
 
     // Public

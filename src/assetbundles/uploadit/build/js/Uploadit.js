@@ -215,7 +215,6 @@ var Uploadit = (function() {
 				return;
 			}
 
-
 			// Limit
 			if (settings.limit) {
 				var numberOfUploadedAssets = api.getNumberOfUploadedAssets();
@@ -384,7 +383,7 @@ var Uploadit = (function() {
 					formData.append("elementId", settings.target.elementId);
 					formData.append("fieldId", settings.target.fieldId);
 					break;
-				case "folder":
+				case "volume":
 					formData.append("folderId", settings.target.folderId);
 					break;
 			}

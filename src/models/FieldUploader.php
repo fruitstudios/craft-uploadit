@@ -3,6 +3,7 @@ namespace fruitstudios\uploadit\models;
 
 use fruitstudios\uploadit\Uploadit;
 use fruitstudios\uploadit\base\Uploader;
+use fruitstudios\uploadit\helpers\UploaditHelper;
 
 use Craft;
 use craft\base\ElementInterface;
@@ -16,7 +17,7 @@ class FieldUploader extends Uploader
 
     public static function type(): string
     {
-        return TYPE_FIELD;
+        return self::TYPE_FIELD;
     }
 
     // Public
@@ -99,7 +100,7 @@ class FieldUploader extends Uploader
             'elementId' => $element->id
         ];
         $this->limit = $field->limit ? $field->limit : null;
-        $this->acceptedFileTypes = $field->limit;
+        $this->allowedFileExtensions = UploaditHelper::getAllowedFileExtensionsByFieldKinds($field->allowedKinds);
 
         return true;
     }
