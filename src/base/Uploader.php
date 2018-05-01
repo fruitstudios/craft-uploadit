@@ -39,9 +39,6 @@ abstract class Uploader extends Model implements UploaderInterface
     // ID
     public $id;
 
-    // Name
-    public $name;
-
     // Assets
     public $assets;
 

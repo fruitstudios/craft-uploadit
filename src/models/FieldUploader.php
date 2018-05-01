@@ -23,6 +23,7 @@ class FieldUploader extends Uploader
     // Public
     // =========================================================================
 
+    public $name;
     public $field;
     public $element;
 
