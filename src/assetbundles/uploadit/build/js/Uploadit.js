@@ -181,7 +181,7 @@ var Uploadit = (function() {
 			}
 			queue = {};
 			checkLimit();
-			setGlobalError(false);
+			api.setGlobalError(false);
 		};
 
 		var cancelUpload = function(qid) {

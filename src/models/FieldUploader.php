@@ -55,25 +55,11 @@ class FieldUploader extends Uploader
 
     public function setTarget(): bool
     {
-        // Ok so an element is required then
-        if(is_null($this->element))
-        {
-            $this->addError('field', Craft::t('uploadit', 'A valid element is required when a using a field as your asset target.'));
-            return false;
-        }
-
         // Element provided lets check it
-        $element = $this->element instanceof ElementInterface ? $this->element : false;
-        if(!$element)
+        $element = $this->element;
+        if($element && !$element instanceof ElementInterface)
         {
             $element = Craft::$app->getElements()->getElementById((int) $this->element);
-        }
-
-        // Element is a duffer
-        if(!$element)
-        {
-            $this->addError('element', Craft::t('uploadit', 'Could not locate your element.'));
-            return false;
         }
 
         // Got an element lets check the field
@@ -90,15 +76,15 @@ class FieldUploader extends Uploader
             return false;
         }
 
-        return $this->_updateTarget($field, $element);
+        return $this->_updateTarget($field, $element ? $element : null);
     }
 
-    private function _updateTarget(FieldInterface $field, ElementInterface $element)
+    private function _updateTarget(FieldInterface $field, ElementInterface $element = null)
     {
         // Set any uploader defaults based on the field
         $this->target = [
             'fieldId' => $field->id,
-            'elementId' => $element->id
+            'elementId' => $element->id ?? null
         ];
         $this->limit = $field->limit ? $field->limit : null;
         $this->allowedFileExtensions = UploaditHelper::getAllowedFileExtensionsByFieldKinds($field->allowedKinds);
