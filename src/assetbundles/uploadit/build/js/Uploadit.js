@@ -15,7 +15,7 @@ var Uploadit = (function() {
 			filter: ".uploadit--controls, .uploadit--remove",
 		},
 		layout: "grid",
-		preview: "image",
+		view: "auto",
 		csrfTokenName: "",
 		csrfTokenValue: "",
 		type: false,
@@ -389,7 +389,7 @@ var Uploadit = (function() {
 			}
 			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
 			formData.append("name", settings.name);
-			formData.append("preview", settings.preview);
+			formData.append("view", settings.view);
 			formData.append("transform", settings.transform);
 			formData.append("enableReorder", settings.enableReorder ? 1 : 0);
 			formData.append("enableRemove", settings.enableRemove ? 1 : 0);

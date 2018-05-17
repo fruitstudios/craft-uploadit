@@ -40,14 +40,14 @@ class UploadController extends Controller
         // Is this a temporary upload?
         if(!$asset->getUrl())
         {
-            // TODO: We need to grab the asset and try and run the transform as a public url
+            // TODO: Could we grab the asset and try and run the transform as a public url
             //     : so it can be displayed on the front end.
         }
 
         // Settings
         $request = Craft::$app->getRequest();
         $name = $request->getParam('name', false);
-        $view = $request->getParam('view', 'image');
+        $view = $request->getParam('view', false);
         $transform = $request->getParam('transform', '');
         $enableReorder = $request->getParam('enableReorder', false);
         $enableRemove = $request->getParam('enableRemove', false);
@@ -67,68 +67,9 @@ class UploadController extends Controller
             'success' => true,
             'asset' => $response->data,
             'html' => $html,
-            'image' => $asset->kind == 'image' ? $asset->getUrl($transform) : false
+            'image' => $asset->kind == 'image' ? ($asset->getUrl($transform) ?? $asset->getThumbUrl(800) ?? false) : false
         ]);
     }
-
-    // public function actionUploadUserPhoto()
-    // {
-    //     $this->requireAcceptsJson();
-    //     $this->requireLogin();
-    //     $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-    //     if ($userId !== Craft::$app->getUser()->getIdentity()->id) {
-    //         $this->requirePermission('editUsers');
-    //     }
-    //     if (($file = UploadedFile::getInstanceByName('photo')) === null) {
-    //         return null;
-    //     }
-    //     try {
-    //         if ($file->getHasError()) {
-    //             throw new UploadFailedException($file->error);
-    //         }
-    //         $users = Craft::$app->getUsers();
-    //         $user = $users->getUserById($userId);
-    //         // Move to our own temp location
-    //         $fileLocation = Assets::tempFilePath($file->getExtension());
-    //         move_uploaded_file($file->tempName, $fileLocation);
-    //         $users->saveUserPhoto($fileLocation, $user, $file->name);
-    //         $html = $this->getView()->renderTemplate('users/_photo', [
-    //             'user' => $user
-    //         ]);
-    //         return $this->asJson([
-    //             'html' => $html,
-    //         ]);
-    //     } catch (\Throwable $exception) {
-    //         * @noinspection UnSafeIsSetOverArrayInspection - FP
-    //         if (isset($fileLocation)) {
-    //             FileHelper::unlink($fileLocation);
-    //         }
-    //         Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
-    //         return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo: {error}', [
-    //             'error' => $exception->getMessage()
-    //         ]));
-    //     }
-    // }
-
-    // public function actionDeleteUserPhoto(): Response
-    // {
-    //     $this->requireAcceptsJson();
-    //     $this->requireLogin();
-    //     $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-    //     if ($userId != Craft::$app->getUser()->getIdentity()->id) {
-    //         $this->requirePermission('editUsers');
-    //     }
-    //     $user = Craft::$app->getUsers()->getUserById($userId);
-    //     if ($user->photoId) {
-    //         Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
-    //     }
-    //     $user->photoId = null;
-    //     Craft::$app->getElements()->saveElement($user, false);
-    //     $html = $this->getView()->renderTemplate('users/_photo', [
-    //         'user' => $user
-    //     ]);
-    //     return $this->asJson(['html' => $html]);
-    // }
 
     public function actionCanUpload()
     {
@@ -150,6 +91,63 @@ class UploadController extends Controller
         return $this->asJson([
             'success' => true,
         ]);
+    }
+
+    public function actionUserPhoto()
+    {
+        $this->requireAcceptsJson();
+        $this->requireLogin();
+
+        $transform = $request->getParam('transform', '');
+
+        if (($file = UploadedFile::getInstanceByName('photo')) === null)
+        {
+            return $this->asErrorJson(Craft::t('uploadit', 'User photo is required.'));
+        }
+        try {
+            if ($file->getHasError())
+            {
+                return $this->asErrorJson($file->error);
+            }
+
+            $users = Craft::$app->getUsers();
+            $user = Craft::$app->getUser()->getIdentity();
+
+            // Move to our own temp location
+            $fileLocation = Assets::tempFilePath($file->getExtension());
+            move_uploaded_file($file->tempName, $fileLocation);
+            $users->saveUserPhoto($fileLocation, $user, $file->name);
+
+            return $this->asJson([
+                'success' => true,
+                'photo' => $user->getPhoto()->getUrl($transform),
+            ]);
+
+        } catch (\Throwable $exception) {
+
+            if (isset($fileLocation))
+            {
+                FileHelper::unlink($fileLocation);
+            }
+            Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
+            return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo: {error}', [
+                'error' => $exception->getMessage()
+            ]));
+        }
+    }
+
+    public function actionDeleteUserPhoto()
+    {
+        $this->requireAcceptsJson();
+        $this->requireLogin();
+
+        $user = Craft::$app->getUser()->getIdentity();
+        if ($user->photoId) {
+            Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+        }
+        $user->photoId = null;
+        Craft::$app->getElements()->saveElement($user, false);
+        return $this->asJson(['success' => true]);
     }
 
 }

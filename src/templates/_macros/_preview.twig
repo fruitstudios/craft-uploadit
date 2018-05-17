@@ -4,10 +4,11 @@
 {% set name = name ?? false %}
 {% set transform = transform ?? false %}
 {% set enableRemove = enableRemove ?? false %}
+{% set view = view ?? 'auto' %}
 
 {% if asset %}
 
-    {% set preview = asset.kind != 'image' ? 'file' : (preview ?? 'image') %}
+    {% set view = asset.kind != 'image' ? 'file' : (view == 'auto' ? 'image' : view) %}
 
     {% if not transform %}
         {% set transform = {
@@ -19,20 +20,21 @@
         } %}
     {% endif %}
 
-
     {% set classes = [
         'uploadit--asset',
-        'uploadit--assetPreview-' ~ preview,
+        'uploadit--assetPreview-' ~ view,
     ]|filter|join(' ') %}
+
+    {% set assetUrl = asset.url ? asset.url(transform) : asset.getThumbUrl(800) %}
 
     {% set attributes = [
-        preview == 'background' ? 'style="background-image: url('~asset.url(transform)~');"' : null,
+        view == 'background' ? 'style="background-image: url('~assetUrl~');"' : null,
     ]|filter|join(' ') %}
 
-    <li class="{{ classes }}"{{ attributes|raw }}>
+    <li class="{{ classes }}" {{ attributes|raw }}>
 
         <span class="uploadit--icon">
-            {% switch preview %}
+            {% switch view %}
 
                 {% case "file" %}
 
@@ -44,13 +46,17 @@
                     <span class="uploadit--filename">{{ asset.filename }}</span>
 
                 {% case "image" %}
-                    <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
-                    <span class="uploadit--filename">{{ asset.filename }}</span>
 
+                    <img src="{{ assetUrl }}" alt="{{ asset.title }}" />
+                    <span class="uploadit--filename">{{ asset.filename }}</span>
 
                 {% case "background" %}
-                    <img src="{{ asset.url(transform) }}" alt="{{ asset.title }}" />
-                    <span class="uploadit--filename">{{ asset.filename }}</span>
+                    {#
+                        TODO: Needed? Are we keeping and hiding using CSS?
+                        <img src="{{ assetUrl }}" alt="{{ asset.title }}" />
+                        <span class="uploadit--filename">{{ asset.filename }}</span>
+                    #}
+
             {% endswitch %}
 
         </span>

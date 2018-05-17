@@ -8,6 +8,7 @@ use fruitstudios\uploadit\assetbundles\uploadit\UploaditAssetBundle;
 use fruitstudios\uploadit\base\UploaderInterface;
 use fruitstudios\uploadit\models\VolumeUploader;
 use fruitstudios\uploadit\models\FieldUploader;
+use fruitstudios\uploadit\models\UserPhotoUploader;
 
 use Craft;
 use craft\web\View;
@@ -29,22 +30,20 @@ class UploaditVariable
         return $this->_renderUploader(FieldUploader::class, $attributes);
     }
 
+    public function userPhotoUploader($attributes = [])
+    {
+        return $this->_renderUploader(UserPhotoUploader::class, $attributes);
+    }
+
     // Private Methods
     // =========================================================================
 
     public function _renderUploader($type, $attributes = [])
     {
-        $uploader = false;
-        switch ($type)
-        {
-            case VolumeUploader::class:
-                $uploader = new VolumeUploader($attributes);
-                break;
-
-            case FieldUploader::class:
-                $uploader = new FieldUploader($attributes);
-                break;
-
+        try{
+            $uploader = new $type($attributes);
+        } catch(\Throwable $exception) {
+            $uploader = false;
         }
 
         if(!$uploader)

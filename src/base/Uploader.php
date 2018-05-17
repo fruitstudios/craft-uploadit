@@ -19,6 +19,7 @@ abstract class Uploader extends Model implements UploaderInterface
 
     const TYPE_VOLUME = 'volume';
     const TYPE_FIELD = 'field';
+    const TYPE_PROFILE = 'profile';
 
     // Private
     // =========================================================================
@@ -52,7 +53,7 @@ abstract class Uploader extends Model implements UploaderInterface
 
     // CSS, Layout & Preview
     public $layout = 'grid';
-    public $preview = 'file';
+    public $view = 'auto'; // auto (best guess), image, file, background
     public $customClass;
     public $themeColour = '#000000';
 
@@ -122,7 +123,7 @@ abstract class Uploader extends Model implements UploaderInterface
             'id',
             'target',
             'layout',
-            'preview',
+            'view',
             'limit',
             'maxSize',
             'transform',
