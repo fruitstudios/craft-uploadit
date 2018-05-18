@@ -24,6 +24,7 @@ var Uploadit = (function() {
 		enableReorder: true,
 		enableRemove: true,
 		target: false,
+		saveOnUpload: false,
 		limit: null,
 		maxSize: 0,
 		allowedFileExtensions: [],
@@ -382,6 +383,8 @@ var Uploadit = (function() {
 				case "field":
 					formData.append("elementId", settings.target.elementId);
 					formData.append("fieldId", settings.target.fieldId);
+					formData.append("saveOnUpload", settings.saveOnUpload ? 1 : 0);
+					formData.append('assetIds', api.getCurrentAssetIds());
 					break;
 				case "volume":
 					formData.append("folderId", settings.target.folderId);
@@ -410,6 +413,20 @@ var Uploadit = (function() {
 		api.getNumberOfUploadedAssets = function() {
 			return dom.assets.childElementCount;
 		};
+
+		api.getCurrentAssetIds = function() {
+			var assetIds = [];
+			if(settings.name)
+			{
+				var inputs = dom.uploader.querySelectorAll('[name="' + settings.name +'"]');
+		        inputs.forEach(function (input, index) {
+		        	if(input.value !== '') {
+		        		assetIds.push(input.value);
+		        	}
+		        });
+			}
+			return assetIds;
+		}
 
 		api.setGlobalError = function(error) {
 			error = error || false;

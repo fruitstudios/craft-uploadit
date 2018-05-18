@@ -26,6 +26,7 @@ class FieldUploader extends Uploader
     public $name;
     public $field;
     public $element;
+    public $saveOnUpload = false;
 
     // Public Methods
     // =========================================================================
@@ -50,6 +51,7 @@ class FieldUploader extends Uploader
     {
         $variables = parent::getJavascriptProperties();
         $variables[] = 'name';
+        $variables[] = 'saveOnUpload';
         return $variables;
     }
 

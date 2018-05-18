@@ -24,10 +24,9 @@ class UploadController extends Controller
         $response = Craft::$app->runAction('assets/save-asset');
 
         // Response Errors
-        if(!$response->getIsSuccessful())
+        if($response->data['error'] ?? false)
         {
-            $error = $response->data['error'] ?? 'Upload Error';
-            return $this->asErrorJson($error);
+            return $this->asErrorJson($response->data['error']);
         }
 
         // Asset
@@ -49,8 +48,34 @@ class UploadController extends Controller
         $name = $request->getParam('name', false);
         $view = $request->getParam('view', false);
         $transform = $request->getParam('transform', '');
-        $enableReorder = $request->getParam('enableReorder', false);
-        $enableRemove = $request->getParam('enableRemove', false);
+        $enableReorder = (bool)$request->getParam('enableReorder', false);
+        $enableRemove = (bool)$request->getParam('enableRemove', false);
+        $elementId = $request->getParam('elementId', false);
+        $saveOnUpload = (bool)$request->getParam('saveOnUpload', false);
+
+        // Save element on upload
+        if($saveOnUpload && $elementId)
+        {
+            $element = Craft::$app->getElements()->getElementById($elementId);
+            if($element)
+            {
+                $fieldName = str_replace(['fields[', '[]', ']'], '', $name);
+
+                $assetIds = $request->getParam('assetIds', '');
+                $assetIds = $assetIds && $assetIds != '' ? explode(',', $assetIds) : [];
+                $assetIds[] = $asset->id;
+
+                $element->setFieldValues([
+                    $fieldName => $assetIds
+                ]);
+
+                $elementSaved = Craft::$app->getElements()->saveElement($element);
+                if(!$elementSaved)
+                {
+                    return $this->asErrorJson(Craft::t('uploadit', 'Could not save uploaded asset.'));
+                }
+            }
+        }
 
         // Preview
         $html = UploaditHelper::renderTemplate('uploadit/_macros/_preview', [
@@ -67,7 +92,8 @@ class UploadController extends Controller
             'success' => true,
             'asset' => $response->data,
             'html' => $html,
-            'image' => $asset->kind == 'image' ? ($asset->getUrl($transform) ?? $asset->getThumbUrl(800) ?? false) : false
+            'image' => $asset->kind == 'image' ? ($asset->getUrl($transform) ?? $asset->getThumbUrl(800) ?? false) : false,
+            'saved' => $elementSaved ?? false
         ]);
     }
 
