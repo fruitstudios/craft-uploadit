@@ -17,7 +17,7 @@ class UserPhotoUploader extends Uploader
 
     public static function type(): string
     {
-        return self::TYPE_PROFILE;
+        return self::TYPE_USER_PHOTO;
     }
 
     // Public
@@ -33,6 +33,9 @@ class UserPhotoUploader extends Uploader
     public function __construct(array $attributes = [])
     {
         parent::__construct();
+
+        $this->allowReorder = false;
+        $this->limit = 1;
 
         // Populate
         $this->setAttributes($attributes, false);

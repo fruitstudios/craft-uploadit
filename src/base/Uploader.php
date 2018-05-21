@@ -19,7 +19,7 @@ abstract class Uploader extends Model implements UploaderInterface
 
     const TYPE_VOLUME = 'volume';
     const TYPE_FIELD = 'field';
-    const TYPE_PROFILE = 'profile';
+    const TYPE_USER_PHOTO = 'userPhoto';
 
     // Private
     // =========================================================================
