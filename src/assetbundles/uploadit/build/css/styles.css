@@ -221,3 +221,65 @@
     display: none;
     visibility: hidden;
 }
+
+.uploadit--userPhotoUploader {
+    position: relative;
+    display: inline-block;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.uploadit--userPhotoUploader .uploadit--controls {
+    position: absolute;
+    top: 0;
+    padding: 0;
+}
+
+.uploadit--userPhotoUploader .uploadit--remove {
+    position: absolute;
+    left: 35%;
+}
+
+.uploadit--userPhotoUploader .uploadit--remove svg {
+    fill: white;
+}
+
+.uploadit--userPhotoUploader .uploadit--defaultUserPhotoWrapper {
+    z-index: -1;
+}
+
+.uploadit--userPhotoUploader .uploadit--userPhoto {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
+
+.uploadit--userPhotoUploader .uploadit--controls {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    top: auto;
+    z-index: 2;
+}
+
+.uploadit--userPhotoUploader .uploadit--upload {
+    display: inline;
+}
+
+.uploadit--userPhotoUploader .uploadit--label {
+    width: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.2) 25%,
+        rgba(0, 0, 0, 0.4) 92%,
+        rgba(0, 0, 0, 0.6) 100%
+    ) !important;
+}
+
+.uploadit--userPhotoUploader .uploadit--userPhotoImage {
+    display: inline;
+}

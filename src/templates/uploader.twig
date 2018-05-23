@@ -40,21 +40,22 @@
 
         <div class="uploadit--controls{{ uploader.limit and uploader.assets|length >= uploader.limit ? ' uploadit--isHidden' }}">
 
-                <div class="uploadit--controls-inner">
+            <div class="uploadit--controls-inner">
 
-                    <a href="javascript:;" class="uploadit--upload">
-                       {#  {{ macros.icon({ icon: 'upload' }) }} #}
-                        <span class="uploadit--label">{{ uploader.selectText }}</span>
-                        {# {% if uploader.enableDropToUpload %}
-                            <span class="uploadit--or">{{ 'or'|t('uploadit') }}</span>
-                            <span class="uploadit--btn">{{ uploader.dropText }}</span>
-                        {% endif %} #}
-                    </a>
+                <a href="javascript:;" class="uploadit--upload">
+                   {#  {{ macros.icon({ icon: 'upload' }) }} #}
+                    <span class="uploadit--label">{{ uploader.selectText }}</span>
+                    {# {% if uploader.enableDropToUpload %}
+                        <span class="uploadit--or">{{ 'or'|t('uploadit') }}</span>
+                        <span class="uploadit--btn">{{ uploader.dropText }}</span>
+                    {% endif %} #}
+                </a>
 
-                    <input type="file" name="uploaditAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />
+                <input type="file" name="uploaditAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />
 
-                </div>
             </div>
+
+        </div>
 
         <div class="uploadit--preload uploadit--isHidden"></div>
 

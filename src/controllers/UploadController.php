@@ -6,7 +6,11 @@ use fruitstudios\uploadit\helpers\UploaditHelper;
 
 use Craft;
 use craft\web\Controller;
+use craft\web\UploadedFile;
 use craft\controllers\AssetsController;
+use craft\helpers\Assets;
+use craft\helpers\FileHelper;
+use craft\elements\Asset;
 
 class UploadController extends Controller
 {
@@ -124,6 +128,7 @@ class UploadController extends Controller
         $this->requireAcceptsJson();
         $this->requireLogin();
 
+        $request = Craft::$app->getRequest();
         $transform = $request->getParam('transform', '');
 
         if (($file = UploadedFile::getInstanceByName('photo')) === null)

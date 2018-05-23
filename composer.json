@@ -2,7 +2,7 @@
     "name": "fruitstudios/uploadit",
     "description": "Front-end asset upload for fields, volumes and folders.",
     "type": "craft-plugin",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "keywords": [
         "craft",
         "cms",

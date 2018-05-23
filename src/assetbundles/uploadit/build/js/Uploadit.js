@@ -1,9 +1,10 @@
 var uploadits = {};
 
-var Uploadit = (function() {
+var UploaditAssets = (function() {
 	"use strict";
 
 	var defaults = {
+		type: false,
 		debug: false,
 		sortable: {
 			animation: 150,
@@ -28,6 +29,7 @@ var Uploadit = (function() {
 		limit: null,
 		maxSize: 0,
 		allowedFileExtensions: [],
+		enableDropToUpload: true,
 	};
 
 	var templates = {
@@ -128,7 +130,7 @@ var Uploadit = (function() {
 				case "drop":
 					upload.classList.remove("uploadit--isDragging");
 					var assets = event.dataTransfer.files;
-					if (!assets) {
+					if (!assets.length) {
 						api.setGlobalError("Drop Error");
 						return;
 					}
@@ -138,10 +140,16 @@ var Uploadit = (function() {
 		};
 
 		var removeAssetHandler = function(event) {
+
+			if (!event.target.closest(".uploadit--remove")) {
+				return;
+			}
+
 			var asset = event.target.closest(".uploadit--asset");
 			if (!asset) {
 				return;
 			}
+
 			event.preventDefault();
 			event.stopPropagation();
 
@@ -153,6 +161,7 @@ var Uploadit = (function() {
 				return;
 			}
 			event.preventDefault();
+			dom.input.value = null;
 			dom.input.click();
 		};
 
@@ -452,10 +461,7 @@ var Uploadit = (function() {
 			// Prep Settings
 			settings = extend(defaults, options || {});
 			if (settings.debug) {
-				console.log(
-					"[ASSETUP][" + settings.id + "] - Settings",
-					settings
-				);
+				console.log("[ASSETUP][ASSETS][" + settings.id + "]", settings);
 			}
 			settings.maxSizeMb = (settings.maxSize / (1024*1024)).toFixed(0);
 
@@ -490,6 +496,316 @@ var Uploadit = (function() {
 	return constructor;
 })();
 
-// ready(function () {
+var UploaditUserPhoto = (function() {
+	"use strict";
 
-// });
+	var defaults = {
+		type: false,
+		debug: false,
+		csrfTokenName: "",
+		csrfTokenValue: "",
+		type: false,
+		transform: "",
+		enableRemove: true,
+		target: false,
+		limit: 1,
+		maxSize: 0,
+		allowedFileExtensions: [],
+		enableDropToUpload: true,
+	};
+
+	var constructor = function(options) {
+
+		// Public
+		// =========================================================================
+
+		var api = {};
+
+		// Private
+		// =========================================================================
+
+		var settings;
+		var dom = {
+			uploader: null,
+			photo: null,
+			photoImage: null,
+			controls: null,
+			input: null,
+			preload: null,
+			errors: null,
+		};
+
+		// Private Methods
+		// =========================================================================
+
+		var initDropToUpload = function() {
+			if (settings.enableDropToUpload) {
+				["dragover", "dragenter", "dragleave", "drop"].forEach(name => {
+					dom.uploader.addEventListener(name, dropToUploadHandler, false);
+				});
+			}
+		};
+
+		var initRemovePhoto = function() {
+			if (settings.enableRemove) {
+				dom.uploader.addEventListener("click", removePhotoHandler, false);
+			}
+		};
+
+		var objToParams = function(obj) {
+			if (typeof obj === "string") return obj;
+			var encoded = [];
+			for (var prop in obj) {
+				if (obj.hasOwnProperty(prop)) {
+					encoded.push(encodeURIComponent(prop) + "=" + encodeURIComponent(obj[prop]));
+				}
+			}
+			return encoded.join("&");
+		};
+
+		var htmlToElement = function(html) {
+			var span = document.createElement("span");
+			span.innerHTML = html.trim();
+			return span.firstChild;
+		};
+
+		// Event Handlers
+		// =========================================================================
+
+		var dropToUploadHandler = function(event) {
+
+			var upload = event.target.closest(".uploadit--userPhotoUploader");
+			if (!upload) {
+				return;
+			}
+			event.preventDefault();
+			event.stopPropagation();
+
+			switch (event.type) {
+				case "dragenter":
+				case "dragover":
+					upload.classList.add("uploadit--isDragging");
+					break;
+
+				case "dragleave":
+					upload.classList.remove("uploadit--isDragging");
+					break;
+
+				case "drop":
+					upload.classList.remove("uploadit--isDragging");
+					var photo = event.dataTransfer.files;
+					if (!photo.length) {
+						api.setGlobalError("Drop Error");
+						return;
+					}
+					api.uploadPhoto(photo);
+					break;
+			}
+		};
+
+		var removePhotoHandler = function(event) {
+
+			if (!event.target.closest(".uploadit--remove")) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+
+			api.removePhoto();
+		};
+
+		var uploadPhotoHandler = function(event) {
+			if (!event.target.closest(".uploadit--upload")) {
+				return;
+			}
+			event.preventDefault();
+			dom.input.value = null;
+			dom.input.click();
+		};
+
+		var photoInputHandler = function(event) {
+			if (!event.target.closest('[name="uploaditUserPhotoInput"]')) {
+				return;
+			}
+			event.preventDefault();
+
+			api.uploadPhoto(dom.input.files);
+		};
+
+		// Public Methods
+		// =========================================================================
+
+		api.uploadPhoto = function(photo) {
+
+			// Clear global errors
+			api.setGlobalError('');
+			dom.uploader.classList.add('uploadit--isLoading');
+
+			// Guard
+			photo = photo[0] || false;
+			if (!photo) {
+				return;
+			}
+
+			// Validate Size
+			if(photo.size > settings.maxSize) {
+				api.setGlobalError('File size cannot exceed ' + settings.maxSizeMb + 'MB');
+				return;
+			}
+
+			// Validate Type
+			var extension = photo.name.split('.').pop();
+			if(settings.allowedFileExtensions.indexOf(extension) === -1) {
+				api.setGlobalError('Invalid file type');
+				return;
+			}
+
+			// Request
+			var xhr = new XMLHttpRequest();
+
+			xhr.open("POST", "/", true);
+			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+			xhr.setRequestHeader("Accept", "application/json");
+
+			// Setup our listener to process compeleted requests
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState !== 4) return;
+
+				if (xhr.status === 200) {
+
+					if(xhr.response.error) {
+
+						api.setGlobalError(xhr.response.error);
+
+					} else {
+
+						preloadImage(xhr.response.photo, function() {
+
+							api.setPhoto(xhr.response.photo);
+
+						});
+					}
+
+				} else {
+					api.setGlobalError(xhr.response.error || 'Request Failed');
+				}
+
+				dom.uploader.classList.remove('uploadit--isLoading');
+			};
+
+			xhr.responseType = "json";
+
+			var formData = new FormData();
+			formData.append("action", "uploadit/upload/user-photo");
+			formData.append("photo", photo);
+			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
+			formData.append("transform", settings.transform);
+			xhr.send(formData);
+		};
+
+		var preloadImage = function(url, success) {
+
+	        var image = htmlToElement('<img style="display:none !important;" class="uploadit--isHidden" src="'+url+'">');
+			image.addEventListener('load', function() {
+				image.remove();
+	        	success();
+	        }, false);
+
+	        dom.preload.before(image);
+		};
+
+
+		api.setGlobalError = function(error) {
+			error = error || false;
+			if (error) {
+				dom.errors.textContent = error;
+				dom.errors.classList.remove("uploadit--isHidden");
+			} else {
+				dom.errors.textContent = "";
+				dom.errors.classList.add("uploadit--isHidden");
+			}
+			dom.uploader.classList.remove('uploadit--isLoading');
+		};
+
+		api.setPhoto = function(url) {
+
+			dom.photoImage.src = url;
+			dom.photo.classList.remove("uploadit--isHidden");
+
+		};
+
+		api.removePhoto = function() {
+
+			// Clear global errors
+			api.setGlobalError('');
+			dom.uploader.classList.add('uploadit--isLoading');
+
+			// Request
+			var xhr = new XMLHttpRequest();
+
+			xhr.open("POST", "/", true);
+			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+			xhr.setRequestHeader("Accept", "application/json");
+
+			// Setup our listener to process compeleted requests
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState !== 4) return;
+
+				if (xhr.status === 200) {
+
+					if(xhr.response.error) {
+						api.setGlobalError(xhr.response.error);
+					} else {
+						dom.photo.classList.add("uploadit--isHidden");
+						dom.photoImage.src = '';
+					}
+
+				} else {
+					api.setGlobalError(xhr.response.error || 'Request Failed');
+				}
+
+				dom.uploader.classList.remove('uploadit--isLoading');
+			};
+
+			xhr.responseType = "json";
+
+			var formData = new FormData();
+			formData.append("action", "uploadit/upload/delete-user-photo");
+			formData.append(settings.csrfTokenName, settings.csrfTokenValue);
+			xhr.send(formData);
+		};
+
+		api.init = function(options) {
+			// Prep Settings
+			settings = extend(defaults, options || {});
+			if (settings.debug) {
+				console.log("[ASSETUP][USERPHOTO][" + settings.id + "]", settings);
+			}
+			settings.maxSizeMb = (settings.maxSize / (1024*1024)).toFixed(0);
+
+			// Elements
+			dom.uploader = document.getElementById(settings.id);
+			dom.photo = dom.uploader.querySelector(".uploadit--userPhoto");
+			dom.photoImage = dom.uploader.querySelector(".uploadit--userPhotoImage");
+			dom.input = dom.uploader.querySelector('[name="uploaditUserPhotoInput"]');
+			dom.errors = dom.uploader.querySelector(".uploadit--errors");
+			dom.preload = dom.uploader.querySelector(".uploadit--preload");
+
+			// Reorder
+			initDropToUpload();
+			initRemovePhoto();
+
+			// Input
+			dom.uploader.addEventListener("change", photoInputHandler, false);
+			dom.uploader.addEventListener("click", uploadPhotoHandler, false);
+		};
+
+		api.init(options);
+		return api;
+	};
+
+	return constructor;
+})();
+
+

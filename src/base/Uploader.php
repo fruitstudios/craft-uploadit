@@ -94,8 +94,8 @@ abstract class Uploader extends Model implements UploaderInterface
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(UploaditAssetBundle::class);
-        $view->registerJs('new Uploadit('.$this->_getJavascriptVariables().');', View::POS_END);
-        $view->registerCss($this->_getCustomCss());
+        $view->registerJs('new UploaditAssets('.$this->getJavascriptVariables().');', View::POS_END);
+        $view->registerCss($this->getCustomCss());
 
         return UploaditHelper::renderTemplate('uploadit/uploader', [
             'uploader' => $this
@@ -139,10 +139,10 @@ abstract class Uploader extends Model implements UploaderInterface
         return null;
     }
 
-    // Private Methods
+    // Protected Methods
     // =========================================================================
 
-    private function _getJavascriptVariables(bool $encode = true)
+    protected function getJavascriptVariables(bool $encode = true)
     {
         $settings = $this->_defaultJavascriptVariables;
         $settings['type'] = static::type();
@@ -154,7 +154,7 @@ abstract class Uploader extends Model implements UploaderInterface
         return $encode ? JsonHelper::encode($settings) : $settings;
     }
 
-    private function _getCustomCss()
+    protected function getCustomCss()
     {
       $css = '
         #'.$this->id.' .uploadit--isLoading:after { border-color: '.$this->themeColour.'; }

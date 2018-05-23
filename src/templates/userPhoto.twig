@@ -1,0 +1,67 @@
+{% set uploader = uploader ?? false %}
+
+{% if uploader and not uploader.hasErrors() %}
+
+    {% set transform = uploader.transform ?? '' %}
+    {% set imageClasses = uploader.imageClasses ?? '' %}
+
+    {% set classes = [
+        'uploadit--userPhotoUploader',
+        uploader.customClass ? uploader.customClass : null,
+    ]|filter|join(' ') %}
+
+    <div id="{{ uploader.id }}" class="{{ classes }}">
+
+        <div class="uploadit--errors uploadit--isHidden"></div>
+
+        {% if uploader.default %}
+            <div class="uploadit--defaultUserPhotoWrapper">
+                <img class="uploadit--defaultUserPhoto {{ imageClasses }}" src="{{ uploader.default.url(transform) }}" alt="Default User Photo" />
+            </div>
+
+        {% endif %}
+
+        <div class="uploadit--userPhoto{{ not uploader.photo ? ' uploadit--isHidden' }}">
+
+            {% if uploader.enableRemove %}
+                <a class="uploadit--remove"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path d="M32.202 27.36L58.62.944c1.226-1.225 3.212-1.225 4.437 0s1.225 3.21 0 4.437L36.64 31.8l26.417 26.418c1.225 1.225 1.225 3.212 0 4.437s-3.21 1.225-4.437 0l-26.418-26.42L5.784 62.653c-1.225 1.225-3.212 1.225-4.437 0s-1.225-3.212 0-4.437l26.418-26.418L1.347 5.38C.122 4.154.122 2.168 1.347.943s3.212-1.225 4.437 0L32.202 27.36z"/></svg></a>
+            {% endif %}
+
+            <img class="uploadit--userPhotoImage {{ imageClasses }}" src="{{ uploader.photo.url(transform)|default('') }}" alt="User Photo" />
+
+        </div>
+
+        <a href="javascript:;" class="uploadit--upload">
+            <input type="file" name="uploaditAssetInput" style="display:none;" />
+        </a>
+
+        <div class="uploadit--controls">
+            <div class="uploadit--controls-inner">
+
+                <a href="javascript:;" class="uploadit--upload">
+                    <span class="uploadit--label">{{ uploader.selectText }}</span>
+                </a>
+                <input type="file" name="uploaditUserPhotoInput" style="display:none;"/>
+            </div>
+        </div>
+
+        <div class="uploadit--preload uploadit--isHidden"></div>
+
+    </div>
+
+{% else %}
+
+    <div class="uploadit--notice">
+        {% if uploader.hasErrors() %}
+            <p>{{ 'Uploader Not Ready'|t('uploadit') }}</p>
+            <ul class="uploadit--noticeErrors">
+                {% for error in uploader.getErrors() %}
+                    <li>{{ error|filter|join(', ') }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>{{ 'Uploader Not Found'|t('uploadit') }}</p>
+        {% endif %}
+    </div>
+
+{% endif %}
