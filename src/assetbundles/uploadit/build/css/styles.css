@@ -183,6 +183,7 @@
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 98;
 }
 
 .uploadit--isLoading:after {
@@ -199,6 +200,7 @@
     border: 3px solid #000000;
     border-top-color: transparent !important;
     animation: loading 0.7s linear infinite;
+    z-index: 99;
 }
 
 /* Notice */
