@@ -23,18 +23,22 @@
 
         <ul id="{{ uploader.id }}Assets" class="uploadit--assets">
 
-            {% for asset in uploader.assets %}
+            {% if uploader.assets | length %}
 
-                {{ macros.preview({
-                    asset: asset,
-                    name: uploader.name,
-                    transform: uploader.transform,
-                    enableReorder: uploader.enableReorder,
-                    enableRemove: uploader.enableRemove,
-                    view: uploader.view
-                }) }}
+               {% for asset in uploader.assets.all() %}
 
-            {% endfor %}
+                   {{ macros.preview({
+                       asset: asset,
+                       name: uploader.name,
+                       transform: uploader.transform,
+                       enableReorder: uploader.enableReorder,
+                       enableRemove: uploader.enableRemove,
+                       view: uploader.view
+                   }) }}
+
+               {% endfor %}
+
+           {% endif %}
 
         </ul>
 
