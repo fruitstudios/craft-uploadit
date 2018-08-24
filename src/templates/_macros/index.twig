@@ -1,5 +1,8 @@
-{% macro icon(config) %}
-	{% include "uploadit/_macros/_icon" with (config ?? {}) only %}
+{% macro icon(name) %}
+	{% set config = name is iterable ? name : {
+		icon: name
+	} %}
+	{% include "uploadit/_macros/_icon" with (config) only %}
 {% endmacro %}
 
 {% macro preview(config) %}

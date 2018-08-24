@@ -11,21 +11,21 @@
         uploader.customClass ? uploader.customClass : null,
     ]|filter|join(' ') %}
 
-    {# TODO: Assets - if assets|length is greater than limit, should i remove assets?  #}
+    {% set assets = uploader.assets ? uploader.assets.all()[:(uploader.limit)] : [] %}
 
     <div id="{{ uploader.id }}" class="{{ classes }}">
 
         <div class="uploadit--errors uploadit--isHidden"></div>
 
-        {% if uploader.name %}
+        {% if uploader.type == 'field' and uploader.name %}
             <input type="hidden" name="{{ uploader.name|replace({'[]': ''}) }}" value="" />
         {% endif %}
 
         <ul id="{{ uploader.id }}Assets" class="uploadit--assets">
 
-            {% if uploader.assets | length %}
+            {% if assets|length %}
 
-               {% for asset in uploader.assets.all() %}
+               {% for asset in assets %}
 
                    {{ macros.preview({
                        asset: asset,
@@ -42,17 +42,19 @@
 
         </ul>
 
-        <div class="uploadit--controls{{ uploader.limit and uploader.assets|length >= uploader.limit ? ' uploadit--isHidden' }}">
+        <div class="uploadit--controls{{ uploader.limit and assets|length >= uploader.limit ? ' uploadit--isHidden' }}">
 
             <div class="uploadit--controls-inner">
 
                 <a href="javascript:;" class="uploadit--upload">
-                   {#  {{ macros.icon({ icon: 'upload' }) }} #}
+                    {% if uploader.showUploadIcon %}
+                      {{ macros.icon('upload') }}
+                    {% endif %}
                     <span class="uploadit--label">{{ uploader.selectText }}</span>
-                    {# {% if uploader.enableDropToUpload %}
+                    {% if uploader.enableDropToUpload %}
                         <span class="uploadit--or">{{ 'or'|t('uploadit') }}</span>
                         <span class="uploadit--btn">{{ uploader.dropText }}</span>
-                    {% endif %} #}
+                    {% endif %}
                 </a>
 
                 <input type="file" name="uploaditAssetInput" style="display:none;"{{ not uploader.limit or uploader.limit > 1 ? ' multiple' }} />

@@ -227,9 +227,17 @@
 .uploadit--userPhotoUploader {
     position: relative;
     display: inline-block;
-    border-radius: 9999px;
+}
+
+.uploadit--inner {
+    position: relative;
     overflow: hidden;
 }
+
+.uploadit--round {
+    border-radius: 9999px;
+}
+
 .uploadit--userPhotoUploader .uploadit--controls {
     position: absolute;
     top: 0;

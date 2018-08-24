@@ -38,6 +38,7 @@ var UploaditAssets = (function() {
 	};
 
 	var constructor = function(options) {
+
 		// Public
 		// =========================================================================
 
@@ -62,9 +63,10 @@ var UploaditAssets = (function() {
 
 		var initDropToUpload = function() {
 			if (settings.enableDropToUpload) {
-				["dragover", "dragenter", "dragleave", "drop"].forEach(name => {
-					dom.uploader.addEventListener(name, dropToUploadHandler, false);
-				});
+				dom.uploader.addEventListener('dragover', dropToUploadHandler, false);
+				dom.uploader.addEventListener('dragenter', dropToUploadHandler, false);
+				dom.uploader.addEventListener('dragleave', dropToUploadHandler, false);
+				dom.uploader.addEventListener('drop', dropToUploadHandler, false);
 			}
 		};
 
@@ -95,6 +97,10 @@ var UploaditAssets = (function() {
 			var span = document.createElement("span");
 			span.innerHTML = html.trim();
 			return span.firstChild;
+		};
+
+		var ensureResponseIsJson = function(response) {
+			return typeof response === 'string' ? JSON.parse(response) : response;
 		};
 
 		var checkLimit = function() {
@@ -312,18 +318,20 @@ var UploaditAssets = (function() {
 
 				if (xhr.status === 200) {
 
-					if(xhr.response.error) {
+					var response = ensureResponseIsJson(xhr.response);
 
-						setUploadError(asset.qid, xhr.response.error);
+					if(response.error) {
+
+						setUploadError(asset.qid, response.error);
 
 					} else {
 
 						updateUploadProgress(asset.qid, 'Processing Upload');
 
-						var preview = htmlToElement(xhr.response.html);
+						var preview = htmlToElement(response.html);
 
-						if(xhr.response.image) {
-							preloadImage(xhr.response.image, function() {
+						if(response.image) {
+							preloadImage(response.image, function() {
 								uploadAssetComplete(asset.qid, preview);
 							});
 						} else {
@@ -332,7 +340,7 @@ var UploaditAssets = (function() {
 					}
 
 				} else {
-					api.setGlobalError(xhr.response.error || 'Request Failed');
+					api.setGlobalError(response.error || 'Request Failed');
 					cancelAllUploads();
 				}
 			};
@@ -354,19 +362,21 @@ var UploaditAssets = (function() {
 				if (xhr.readyState !== 4) return;
 				if (xhr.status === 200) {
 
-					if(xhr.response.success) {
+					var response = ensureResponseIsJson(xhr.response);
+
+					if(response.success) {
 
 						success();
 
 					} else {
 
-						api.setGlobalError(xhr.response.error);
+						api.setGlobalError(response.error);
 						cancelAllUploads();
 
 					}
 
 				} else {
-					api.setGlobalError(xhr.response.error);
+					api.setGlobalError(response.error);
 					cancelAllUploads();
 				}
 			};
@@ -469,9 +479,7 @@ var UploaditAssets = (function() {
 			dom.uploader = document.getElementById(settings.id);
 			dom.assets = dom.uploader.querySelector(".uploadit--assets");
 			dom.controls = dom.uploader.querySelector(".uploadit--controls");
-			dom.input = dom.uploader.querySelector(
-				'[name="uploaditAssetInput"]'
-			);
+			dom.input = dom.uploader.querySelector('[name="uploaditAssetInput"]');
 			dom.errors = dom.uploader.querySelector(".uploadit--errors");
 			dom.preload = dom.uploader.querySelector(".uploadit--preload");
 
@@ -540,9 +548,10 @@ var UploaditUserPhoto = (function() {
 
 		var initDropToUpload = function() {
 			if (settings.enableDropToUpload) {
-				["dragover", "dragenter", "dragleave", "drop"].forEach(name => {
-					dom.uploader.addEventListener(name, dropToUploadHandler, false);
-				});
+				dom.uploader.addEventListener('dragover', dropToUploadHandler, false);
+				dom.uploader.addEventListener('dragenter', dropToUploadHandler, false);
+				dom.uploader.addEventListener('dragleave', dropToUploadHandler, false);
+				dom.uploader.addEventListener('drop', dropToUploadHandler, false);
 			}
 		};
 
@@ -567,6 +576,10 @@ var UploaditUserPhoto = (function() {
 			var span = document.createElement("span");
 			span.innerHTML = html.trim();
 			return span.firstChild;
+		};
+
+		var ensureResponseIsJson = function(response) {
+			return typeof response === 'string' ? JSON.parse(response) : response;
 		};
 
 		// Event Handlers
@@ -674,21 +687,23 @@ var UploaditUserPhoto = (function() {
 
 				if (xhr.status === 200) {
 
-					if(xhr.response.error) {
+					var response = ensureResponseIsJson(xhr.response);
 
-						api.setGlobalError(xhr.response.error);
+					if(response.error) {
+
+						api.setGlobalError(response.error);
 
 					} else {
 
-						preloadImage(xhr.response.photo, function() {
+						preloadImage(response.photo, function() {
 
-							api.setPhoto(xhr.response.photo);
+							api.setPhoto(response.photo);
 
 						});
 					}
 
 				} else {
-					api.setGlobalError(xhr.response.error || 'Request Failed');
+					api.setGlobalError(response.error || 'Request Failed');
 				}
 
 				dom.uploader.classList.remove('uploadit--isLoading');
@@ -754,15 +769,17 @@ var UploaditUserPhoto = (function() {
 
 				if (xhr.status === 200) {
 
-					if(xhr.response.error) {
-						api.setGlobalError(xhr.response.error);
+					var response = ensureResponseIsJson(xhr.response);
+
+					if(response.error) {
+						api.setGlobalError(response.error);
 					} else {
 						dom.photo.classList.add("uploadit--isHidden");
 						dom.photoImage.src = '';
 					}
 
 				} else {
-					api.setGlobalError(xhr.response.error || 'Request Failed');
+					api.setGlobalError(response.error || 'Request Failed');
 				}
 
 				dom.uploader.classList.remove('uploadit--isLoading');

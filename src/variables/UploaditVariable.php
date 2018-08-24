@@ -54,16 +54,4 @@ class UploaditVariable
         return TemplateHelper::raw($uploader->render());
     }
 
-
-
-
-    // public function uploader($attributes = [])
-    // {
-    //     // Uploader
-    //     $uploader = new Uploader($attributes);
-    //     // Craft::dd($uploader);
-    //     // Return Uploader
-    //     $html = $uploader->render();
-    //     return TemplateHelper::raw($html);
-    // }
 }

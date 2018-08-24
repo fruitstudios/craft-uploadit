@@ -51,15 +51,14 @@ abstract class Uploader extends Model implements UploaderInterface
     public $enableReorder = true;
     public $enableRemove = true;
 
-    // CSS, Layout & Preview
+    // Styles, Layout & Preview
     public $layout = 'grid';
     public $view = 'auto'; // auto (best guess), image, file, background
     public $customClass;
     public $themeColour = '#000000';
-
-    // Language
     public $selectText;
     public $dropText;
+    public $showUploadIcon = true;
 
     // Asset
     public $transform = '';
@@ -114,6 +113,7 @@ abstract class Uploader extends Model implements UploaderInterface
 
     public function beforeValidate()
     {
+        $this->_checkTransformExists();
         $this->setTarget();
     }
 
@@ -163,5 +163,21 @@ abstract class Uploader extends Model implements UploaderInterface
       ';
 
       return $css;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    private function _checkTransformExists()
+    {
+        if(is_string($this->transform) && !empty($this->transform))
+        {
+            if(!Craft::$app->getAssetTransforms()->getTransformByHandle($this->transform))
+            {
+                $this->addError('transform', Craft::t('uploadit', 'Asset transform does not exist'));
+                return false;
+            }
+        }
+        return true;
     }
 }
