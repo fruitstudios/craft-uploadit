@@ -27,9 +27,12 @@ class UserPhotoUploader extends Uploader
     // =========================================================================
 
     public $default;
+    public $defaultWidth = 100;
+    public $defaultHeight = 100;
     public $photo;
     public $round = false;
     public $imageClasses;
+
 
     // Public Methods
     // =========================================================================
