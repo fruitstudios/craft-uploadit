@@ -2,7 +2,12 @@
 
 .uploadit--uploader {
     position: relative;
+    border:1px dotted #ccc;
+    border-radius: 6px;
 }
+
+.uploadit--uploader.uploadit--layout-grid {}
+.uploadit--uploader.uploadit--layout-list {}
 
 .uploadit--assets {
     list-style-type: none;
@@ -24,12 +29,9 @@
     cursor: all-scroll;
 }
 
-.uploadit--assetPreview-background {
-}
-.uploadit--assetPreview-image {
-}
-.uploadit--assetPreview-file {
-}
+.uploadit--assetPreview-background {}
+.uploadit--assetPreview-image {}
+.uploadit--assetPreview-file {}
 
 .uploadit--icon {
     display: flex;

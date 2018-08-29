@@ -28,16 +28,25 @@ class UploaditHelper
     // Field Map
     // =========================================================================
 
-    public static function getAllowedFileExtensionsByFieldKinds(array $kinds)
+    public static function getAllowedFileExtensionsByFieldKinds(array $kinds = null)
     {
+        if(!$kinds)
+        {
+            return Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+        }
+
+
         $fileKinds = AssetsHelper::getFileKinds();
 
         $allowedFileExtensions = [];
-        foreach($kinds as $kind)
+        if($kinds)
         {
-            if(array_key_exists($kind, $fileKinds))
+            foreach($kinds as $kind)
             {
-                $allowedFileExtensions = array_merge($allowedFileExtensions, $fileKinds[$kind]['extensions']);
+                if(array_key_exists($kind, $fileKinds))
+                {
+                    $allowedFileExtensions = array_merge($allowedFileExtensions, $fileKinds[$kind]['extensions']);
+                }
             }
         }
 

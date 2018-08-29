@@ -52,7 +52,7 @@ abstract class Uploader extends Model implements UploaderInterface
     public $enableRemove = true;
 
     // Styles, Layout & Preview
-    public $layout = 'grid';
+    public $layout = 'grid'; // grid or list
     public $view = 'auto'; // auto (best guess), image, file, background
     public $customClass;
     public $themeColour = '#000000';

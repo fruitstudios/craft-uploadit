@@ -537,6 +537,7 @@ var UploaditUserPhoto = (function() {
 			uploader: null,
 			photo: null,
 			photoImage: null,
+			defaultPhoto: null,
 			controls: null,
 			input: null,
 			preload: null,
@@ -747,6 +748,7 @@ var UploaditUserPhoto = (function() {
 
 			dom.photoImage.src = url;
 			dom.photo.classList.remove("uploadit--isHidden");
+			dom.defaultPhoto.classList.add("uploadit--isHidden");
 
 		};
 
@@ -776,6 +778,7 @@ var UploaditUserPhoto = (function() {
 					} else {
 						dom.photo.classList.add("uploadit--isHidden");
 						dom.photoImage.src = '';
+						dom.defaultPhoto.classList.remove("uploadit--isHidden");
 					}
 
 				} else {
@@ -805,6 +808,7 @@ var UploaditUserPhoto = (function() {
 			dom.uploader = document.getElementById(settings.id);
 			dom.photo = dom.uploader.querySelector(".uploadit--userPhoto");
 			dom.photoImage = dom.uploader.querySelector(".uploadit--userPhotoImage");
+			dom.defaultPhoto = dom.uploader.querySelector(".uploadit--defaultUserPhotoWrapper");
 			dom.input = dom.uploader.querySelector('[name="uploaditUserPhotoInput"]');
 			dom.errors = dom.uploader.querySelector(".uploadit--errors");
 			dom.preload = dom.uploader.querySelector(".uploadit--preload");
