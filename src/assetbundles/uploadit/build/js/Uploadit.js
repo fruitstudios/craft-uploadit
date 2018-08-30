@@ -316,9 +316,10 @@ var UploaditAssets = (function() {
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState !== 4) return;
 
+				var response = ensureResponseIsJson(xhr.response);
+
 				if (xhr.status === 200) {
 
-					var response = ensureResponseIsJson(xhr.response);
 
 					if(response.error) {
 
@@ -686,9 +687,9 @@ var UploaditUserPhoto = (function() {
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState !== 4) return;
 
-				if (xhr.status === 200) {
+				var response = ensureResponseIsJson(xhr.response);
 
-					var response = ensureResponseIsJson(xhr.response);
+				if (xhr.status === 200) {
 
 					if(response.error) {
 
