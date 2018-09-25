@@ -191,13 +191,13 @@ var UploaditAssets = (function() {
 		// Public Methods
 		// =========================================================================
 
-		var cancelAllUploads = function() {
+		var cancelAllUploads = function(error) {
 			for (var qid in queue) {
 				cancelUpload(qid);
 			}
 			queue = {};
 			checkLimit();
-			api.setGlobalError(false);
+			api.setGlobalError(error || false);
 		};
 
 		var cancelUpload = function(qid) {
@@ -320,7 +320,6 @@ var UploaditAssets = (function() {
 
 				if (xhr.status === 200) {
 
-
 					if(response.error) {
 
 						setUploadError(asset.qid, response.error);
@@ -341,8 +340,9 @@ var UploaditAssets = (function() {
 					}
 
 				} else {
-					api.setGlobalError(response.error || 'Request Failed');
-					cancelAllUploads();
+					if(xhr.status != 0 && response) {
+						cancelAllUploads(response.error || 'Request Failed');
+					}
 				}
 			};
 
@@ -366,19 +366,13 @@ var UploaditAssets = (function() {
 					var response = ensureResponseIsJson(xhr.response);
 
 					if(response.success) {
-
 						success();
-
 					} else {
-
-						api.setGlobalError(response.error);
-						cancelAllUploads();
-
+						cancelAllUploads(response.error || 'Request Failed');
 					}
 
 				} else {
-					api.setGlobalError(response.error);
-					cancelAllUploads();
+					cancelAllUploads(response.error || 'Request Failed');
 				}
 			};
 
