@@ -111,11 +111,15 @@ class UploadController extends Controller
             return $this->asErrorJson(Craft::t('uploadit', 'Only logged in users can upload assets.'));
         }
 
-        // TODO: this probably needs to happen else where, based on the specific volume permissions
-        //
-        // if (!Craft::$app->getUser()->checkPermission('deleteUsers'))
+        // $volumeId = '44';
+        // $permission = 'viewVolume:'.$volumeId;
+        // $permission = 'saveAssetInVolume:'.$volumeId;
+        // $permission = 'createFoldersInVolume:'.$volumeId;
+        // $permission = 'deleteFilesAndFoldersInVolume:'.$volumeId;
+
+        // if (!Craft::$app->getUser()->checkPermission($permission))
         // {
-        //     return $this->asErrorJson(Craft::t('uploadit', 'You don\'t have permission to upload assets.'));
+        //     return $this->asErrorJson(Craft::t('uploadit', 'You don\'t have permission to upload assets here.'));
         // }
 
         return $this->asJson([
