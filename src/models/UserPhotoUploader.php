@@ -14,6 +14,10 @@ use craft\web\View;
 
 class UserPhotoUploader extends Uploader
 {
+    // Static
+    // =========================================================================
+
+    const DEFAULT_SIZE = 100;
 
     // Static
     // =========================================================================
@@ -27,8 +31,8 @@ class UserPhotoUploader extends Uploader
     // =========================================================================
 
     public $default;
-    public $defaultWidth = 100;
-    public $defaultHeight = 100;
+    public $width;
+    public $height;
     public $photo;
     public $round = false;
     public $imageClasses;
@@ -59,6 +63,7 @@ class UserPhotoUploader extends Uploader
     {
         $rules = parent::rules();
         $rules[] = [['name'], 'required'];
+        $rules[] = [['width', 'height'], 'number'];
         $rules[] = [['imageClasses'], 'string'];
         return $rules;
     }
@@ -79,6 +84,16 @@ class UserPhotoUploader extends Uploader
 
         $this->target = $currentUser->id;
         return true;
+    }
+
+    public function getDefaultWidth()
+    {
+        return self::DEFAULT_SIZE;
+    }
+
+    public function getDefaultHeight()
+    {
+        return self::DEFAULT_SIZE;
     }
 
     public function render()

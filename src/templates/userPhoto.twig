@@ -1,9 +1,9 @@
 {% import "uploadit/_macros" as macros %}
 
 {% set uploader = uploader ?? false %}
-
 {% if uploader and not uploader.hasErrors() %}
 
+    {# Classes & Defaults #}
     {% set transform = uploader.transform ?? '' %}
     {% set imageClasses = uploader.imageClasses ?? '' %}
 
@@ -12,22 +12,26 @@
         uploader.customClass ? uploader.customClass : null,
     ]|filter|join(' ') %}
 
-    {% if not uploader.default and not uploader.photo %}
-        {% set transformData = transform ? craft.app.assetTransforms.getTransformByHandle(transform) : false %}
-        {% set width = transformData.width|default(uploader.defaultWidth) %}
-        {% set height = transformData.height|default(uploader.defaultHeight) %}
-    {% else %}
-        {% set width = uploader.default.getWidth(transform)|default(uploader.defaultWidth) %}
-        {% set height = uploader.default.getHeight(transform)|default(uploader.defaultHeight) %}
+     {% set defaultUserImageUrl = uploader.default.url(transform)|default(craft.app.assetManager.getPublishedUrl('@fruitstudios/uploadit/assetbundles/uploadit/build/images', true, 'user.png')) %}
+
+    {# Calculate Dimentions #}
+    {% set width = uploader.width ?? false %}
+    {% set height = uploader.height ?? false %}
+    {% if not (width and height) %}
+        {% if not uploader.default and not uploader.photo %}
+            {% set transformData = transform ? craft.app.assetTransforms.getTransformByHandle(transform) : false %}
+            {% set width = transformData.width|default(uploader.defaultWidth) %}
+            {% set height = transformData.height|default(uploader.defaultHeight) %}
+        {% else %}
+            {% set width = uploader.default.getWidth(transform)|default(uploader.defaultWidth) %}
+            {% set height = uploader.default.getHeight(transform)|default(uploader.defaultHeight) %}
+        {% endif %}
     {% endif %}
 
-    {% set defaultUserImageUrl = uploader.default.url(transform)|default(craft.app.assetManager.getPublishedUrl('@fruitstudios/uploadit/assetbundles/uploadit/build/images', true, 'user.png')) %}
-
-    {% set imageStylesString = 'width:'~width~'px;height:'~height~'px;' %}
-
+    {# Render #}
     <div id="{{ uploader.id }}" class="{{ classes }}">
 
-        <div class="uploadit--inner{{ uploader.round ? ' uploadit--round' }}" style="{{ imageStylesString }}">
+        <div class="uploadit--inner{{ uploader.round ? ' uploadit--round' }}" style="width:{{ width }}px;height:{{ height }}px;">
 
             <div class="uploadit--defaultUserPhotoWrapper{{ uploader.photo ? ' uploadit--isHidden' }}"">
                 <img class="uploadit--defaultUserPhoto {{ imageClasses }}" src="{{ defaultUserImageUrl }}" alt="Default User Photo" />

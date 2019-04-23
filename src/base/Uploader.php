@@ -72,17 +72,19 @@ abstract class Uploader extends Model implements UploaderInterface
 
     public function __construct()
     {
+        $config = Craft::$app->getConfig()->getGeneral();
+
         // Defualt Settings
         $this->id = uniqid('uploadit');
         $this->selectText = Craft::t('uploadit', 'Select files');
         $this->dropText = Craft::t('uploadit', 'drop files here');
-        $this->maxSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
-        $this->allowedFileExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+        $this->maxSize = $config->maxUploadFileSize;
+        $this->allowedFileExtensions = $config->allowedFileExtensions;
 
         // Default Javascript Variables
         $this->_defaultJavascriptVariables = [
-            'debug' => Craft::$app->getConfig()->getGeneral()->devMode,
-            'csrfTokenName' => Craft::$app->getConfig()->getGeneral()->csrfTokenName,
+            'debug' => $config->devMode,
+            'csrfTokenName' => $config->csrfTokenName,
             'csrfTokenValue' => Craft::$app->getRequest()->getCsrfToken(),
         ];
     }
@@ -107,7 +109,7 @@ abstract class Uploader extends Model implements UploaderInterface
 
         $rules = parent::rules();
         $rules[] = [['id'], 'required'];
-        $rules[] = [['maxSize'], 'integer', 'max' => $this->_defaultMaxUploadFileSize, 'message' => Craft::t('uploadit', 'Max file cant be greater than the global setting maxUploadFileSize')];
+        $rules[] = [['maxSize'], 'integer', 'max' => $this->_defaultMaxUploadFileSize, 'message' => Craft::t('uploadit', 'Max file can\'t be greater than the global setting maxUploadFileSize')];
         return $rules;
     }
 
